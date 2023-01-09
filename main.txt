@@ -1,0 +1,3 @@
+buybotconfig - Config the buybot
+buybotstart - Start the buybot
+buybotstop - Stop the buybot
