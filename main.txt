@@ -1,3 +1,99 @@
-buybotconfig - Config the buybot
-buybotstart - Start the buybot
-buybotstop - Stop the buybot
+
+
+message = "#### Heading level 4\n"
+    message += emoji_text + "\n"
+    message += "💵 Spent: " + \
+        str(float("{:.2f}".format(float(token_price) *
+            float(tx_amount1OutEthUnits)))) + " USD\n"
+    message += "🪙 Received: " + \
+        str(float("{:.2f}".format(float(tx_amount1OutEthUnits)))) + " Tokens\n"
+    message += "🚘 Price: " + \
+        str(float("{:.8f}".format(float(token_price)))) + " USD\n"
+
+
+{"args": {"sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "to": "0x5607f96D4f0088833a10377F7f43eb19bc24B171", "amount0In": 0, "amount1In": 575000000000000000, "amount0Out": 3428621956017115909243531, "amount1Out": 0}, "event": "Swap", "logIndex": 283, "transactionIndex": 143, "transactionHash": "0x9505889816f9432ed314d6942804e7b5da889b9fa87139210244da68ad3074de", "address": "0x4674D4a748f787e5Cb81e73290d1B96A1a788EFC", "blockHash": "0x7f93eecb33d5e17f3577fd0917e0b929eb58ed5589a3463a7ef4f68915812d59", "blockNumber": 16378312}
+
+https://t.me/boopaitest
+https://twitter.com/ethereum
+https://www.google.com/
+
+
+
+address - Set the token address
+emoji - Set the custom emoji
+website - Set the website url
+telegram - Set the telegram url 
+twitter - Set the twitter url
+gif - Set the video / gif
+start - Start the bot
+stop - Stop the bot
+
+
+
+
+        # calculate the price impact
+
+        """     
+        This calculation uses the constant product formula used on Uniswap to determine how much of one asset should be swapped for another asset.
+        Some exchanges may have a slightly more complex formula to combat price impact or impermanent loss. But this is the most common and easiest to calculate.
+
+        Constant product formula: token_a_pool_size * token_b_pool_size = constant_product
+
+        constant_product will be the same number before and after a trade occurs.
+
+        A couple of examples to show price impact calculation:
+
+        Starting pool for both examples
+
+        Initial pool info
+
+        wMATIC = 3024
+        LUCHA = 4318
+        Constant Product = 13,057,632
+        Lucha Market Price = 0,700322422 wMATIC
+        First example : 100 wMATIC for LUCHA
+
+        After swap
+
+        wMATIC = 3124 (we added 100 wMATIC to the pool)
+        Constant Product = 13,057,632 (stays the same)
+        LUCHA = 4179,77977 (constant product / new wMATIC amount)
+        LUCHA received = 138,22023 (old LUCHA amount — new LUCHA amount)
+
+        Price paid per LUCHA= 0,72334830965 wMATIC
+
+        Price impact =1- (Market price / Price paid) = 3,18% """
+
+        # get reserver from pair contract
+
+    """     reserves = contract.functions.getReserves().call()
+        print(reserves)
+
+        pair_a_reserve = reserves[0]
+        pair_b_reserve = reserves[1]
+        constant_product = pair_a_reserve * pair_b_reserve
+        print("Constant product: ", constant_product)
+
+        pair_a_per_pair_b_price = pair_a_reserve / pair_b_reserve
+        print("Pair A per pair B price: ", pair_a_per_pair_b_price)
+
+        # calculate price impact based on the constant product formula
+        pair_a_reserve_after_swap = pair_a_reserve + tx_amount1In
+        print("Pair A reserve after swap: ", pair_a_reserve_after_swap)
+
+        pair_b_reserve_after_swap = constant_product / pair_a_reserve_after_swap
+        print("Pair B reserve after swap: ", pair_b_reserve_after_swap)
+
+        pair_b_received = pair_b_reserve - pair_b_reserve_after_swap
+        print("Pair B received: ", pair_b_received)
+
+        pair_b_price_paid_per_pair_a = pair_a_reserve / pair_b_reserve_after_swap
+        print("Pair B price paid per pair A: ", pair_b_price_paid_per_pair_a)
+
+        price_impact = 1 - (pair_a_per_pair_b_price /
+                            pair_b_price_paid_per_pair_a)
+        price_impact = price_impact * 100
+
+        # price_impact = 1
+        print("price_impact: " + str(price_impact)) 
+        """

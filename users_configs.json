@@ -1,1 +1,12 @@
-[{"user_id": 358896373, "token_address": "0xFe1fC18C52B71F8a38C4526F46e6302828d7F005", "pair_address": "0xbFa9244c2Ada020C0d197cf076e7CDC530905f14", "chat_id": -1001703305949}]
+[
+  {
+    "user_id": 358896373,
+    "token_address": "0x07059f69CDfD236E2399099e54b4BD725dDc1102",
+    "pair_address": "0x4674d4a748f787e5cb81e73290d1b96a1a788efc",
+    "chat_id": -1001703305949,
+    "emoji": "\ud83d\udcca",
+    "websiteurl": "https://www.google.com/",
+    "twitterurl": "https://twitter.com/ethereum",
+    "telegramurl": "https://t.me/boopaitest"
+  }
+]
