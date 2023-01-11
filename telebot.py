@@ -104,27 +104,29 @@ async def handle_event(event, contract, update: Update, user_config):
 
         # add link to etherscan using markdown
         # add gif to message
+        # set bold for token name
 
-        message += token_name + " Buy!\n"
+        message += "*" + token_name + " Buy!*\n"
         message += emoji_text + "\n\n"
-        message += "💵 " + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " ETH " +\
+        message += "💵  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " ETH " +\
             str(float("{:,.2f}".format(float(token_price) *
-                float(tx_amount0OutEthUnits)))) + " USD\n"
+                float(tx_amount0OutEthUnits)))) + "USD*\n"
 
-        message += "🪙 " + \
-            str("{:,.2f}".format(float(tx_amount0OutEthUnits))) + " Tokens\n"
-        message += "⚪️ Price: " + \
-            str("{:,.8f}".format(float(token_price))) + "\n"
-        message += "🔘 Market Cap: $" + \
-            str("{:,.2f}".format(float(market_cap))) + "\n"
+        message += "🪙  *" + \
+            str("{:,.2f}".format(float(tx_amount0OutEthUnits))) + "Tokens*\n"
+
+        message += "⚪️ *Price: " + \
+            str("{:,.8f}".format(float(token_price))) + "*\n"
+        message += "🔘 *Market Cap: $" + \
+            str("{:,.2f}".format(float(market_cap))) + "*\n"
         message += "\n"
 
-        message += "🛳 Volume 24h: $" + \
-            str("{:,.2f}".format(float(volume_24h))) + "\n"
-        message += "🔫 Taxes B/S | " + \
-            str(buy_tax) + "/" + str(sell_tax) + "%\n"
+        message += "🛳 *Volume 24h: $" + \
+            str("{:,.2f}".format(float(volume_24h))) + "*\n"
+        message += "🔫 *Taxes B/S | " + \
+            str(buy_tax) + "/" + str(sell_tax) + "%*\n"
 
-        message += "🧸 Holder count: " + str(token_holders) + "\n"
+        message += "🧸 *Holder count: " + str(token_holders) + "*\n"
 
         message += "🪪 [TX](https://etherscan.io/tx/" + tx_hash + ")" + \
             " | [Address](https://etherscan.io/address/" + tx_from + ")\n"
@@ -138,7 +140,6 @@ async def handle_event(event, contract, update: Update, user_config):
 
         # escape markdown characters
         message = message.replace("_", "\_")
-        message = message.replace("*", "\*")
         message = message.replace("`", "\`")
         message = message.replace(".", "\.")
         message = message.replace("%", "\%")
@@ -303,6 +304,10 @@ async def run_buybot(contract, update: Update, user_config):
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
+
+
+async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(f'Descriptiom of the buybot')
 
 
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -584,5 +589,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stop", stop_buybot))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
     app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(CommandHandler("description", buybot_description))
 
     app.run_polling()
