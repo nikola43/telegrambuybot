@@ -332,7 +332,22 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'Descriptiom of the buybot')
+
+    # create description of the buybot
+    text = "◽️ Hi I'm Boop. Welcome to V1. Boop. ◽️" + "\n\n"
+    text += "This is a list of all the things I'm capable of at the moment. " + "\n\n"
+    text += "Please add me to your group first before using any of my commands." + "\n\n"
+    text += "- Type /address(CONTRACT ADDRESS) | to track your coin" + "\n\n"
+    text += "- Type /emoji(EMOJI) | to set a custom emoji" + "\n\n"
+    text += "- Type /website(WEBSITE) | to set a custom website url" + "\n\n"
+    text += "- Type /telegram(TELEGRAM) | to set a custom telegram url" + "\n\n"
+    text += "- Type /twitter(TWITTER) | to set a custom twitter url" + "\n\n"
+    text += "- Type /gif | while you send your mp4 file to set a custom gif" + "\n\n"
+    text += "- Type /start | to start the bot" + "\n\n"
+    text += "- Type /stop | to stop the bot" + "\n\n"
+    text += "Click here for a tutorial on how to set me up"
+
+    await update.message.reply_text(text)
 
 
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
