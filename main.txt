@@ -97,3 +97,7 @@ stop - Stop the bot
         # price_impact = 1
         print("price_impact: " + str(price_impact)) 
         """
+
+
+            print("token_holders", "https://etherscan.io/token/tokenholderchart/" +user_config['token_address'])
+        message += "🧸 *[Holders](https://etherscan.io/token/tokenholderchart/" +user_config['token_address'] + ") " + str(token_holders) +"*\n"

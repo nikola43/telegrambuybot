@@ -122,12 +122,12 @@ async def handle_event(event, contract, update: Update, user_config):
 
         message += "*" + token_name + " Buy!*\n"
         message += emoji_text + "\n\n"
-        message += "💠  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " Ξ ETH $" +\
-            str("{:,.2f}".format(float(token_price) *
+        message += "💠  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " ETH $" +\
+            str("{:,.0f}".format(float(token_price) *
                 float(tx_amount0OutEthUnits))) + "*\n"
 
         message += "🧩  *" + \
-            str("{:,.2f}".format(float(tx_amount0OutEthUnits))) + \
+            str("{:,.0f}".format(float(tx_amount0OutEthUnits))) + \
             " " + token_name + "*\n"
 
         message += "💵 *$" + \
@@ -143,18 +143,20 @@ async def handle_event(event, contract, update: Update, user_config):
 
         message += "\n"
 
-        message += "🔘 *Market Cap: $" + \
-            str("{:,.2f}".format(float(market_cap))) + "$*\n"
+        message += "🔘 *Market Cap $" + \
+            str("{:,.0f}".format(float(market_cap))) + "*\n"
 
-        message += "⭐️ *Volume 24h: $" + \
-            str("{:,.2f}".format(float(volume_24h))) + "*\n"
-        message += "🧸 *[Holder count]:" + str(token_holders) + "*\n"
+        message += "⭐️ *24h Volume $" + \
+            str("{:,.0f}".format(float(volume_24h))) + "*\n"
+        message += "🧸 *[Holders](https://etherscan.io/token/tokenholderchart/" + \
+            user_config['token_address'] + ") " + str(token_holders) + "*\n"
+
         message += "🔪 *Taxes B/S | " + \
-            str(buy_tax) + "/" + str(sell_tax) + "%*\n"
+            str(buy_tax) + "/" + str(sell_tax) + "*\n"
 
         message += "\n"
 
-        message += "📊 *[Chart](https://www.dextools.io/app/en/ether/pair-explorer/" + contract.address + ")*" + " ▫️ *[Buy](https://app.uniswap.org/#/swap?outputCurrency=" + \
+        message += "*[Chart](https://www.dextools.io/app/en/ether/pair-explorer/" + contract.address + ")*" + " ▫️ *[Buy](https://app.uniswap.org/#/swap?outputCurrency=" + \
             user_config['token_address'] + ")*\n"
 
         message += "*[Website](" + user_config['websiteurl'] + ")* ▫️ *[Twitter](" + \
@@ -182,9 +184,9 @@ async def handle_event(event, contract, update: Update, user_config):
         """Sends a message with three inline buttons attached."""
         keyboard = [
             [
-                InlineKeyboardButton("▫️ YOUR AD HERE ▫️", callback_data="1"),
+                InlineKeyboardButton("▫️ UR AD HERE ▫️", callback_data="1"),
                 InlineKeyboardButton(
-                    "▫️ INSTALL BOOP BOT ▫️", callback_data="2"),
+                    "▫️ GET BOOP ▫️", callback_data="2"),
             ],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
