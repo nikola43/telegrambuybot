@@ -24,7 +24,7 @@ users_tasks = {}
 
 
 async def handle_event(event, contract, update: Update, user_config):
-    # print(Web3.toJSON(event))
+    print(Web3.toJSON(event))
     # print()
 
     print("New Buy!")
@@ -87,6 +87,20 @@ async def handle_event(event, contract, update: Update, user_config):
         data = response.json()
         dead_wallet_balance = data['result']
 
+        response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
+                                user_config['token_address']+"&address="+tx_to+"&tag=latest&apikey=" + etherscan_api_key)
+        data = response.json()
+        wallet_token_balance = data['result']
+
+        is_new_holder = False
+
+        # check if wallet_token_balance is equal to tx_amount0Out
+        print("wallet_token_balance: " + wallet_token_balance)
+        print("tx_amount0Out: " + str(tx_amount0Out))
+        if str(wallet_token_balance) == str(tx_amount0Out):
+            print("New Wallet!")
+            is_new_holder = True
+
         # calc market cap. total supply - dead wallet balance
         circulating_supply = web3.fromWei(
             float(total_supply) - float(dead_wallet_balance), 'ether')
@@ -108,35 +122,44 @@ async def handle_event(event, contract, update: Update, user_config):
 
         message += "*" + token_name + " Buy!*\n"
         message += emoji_text + "\n\n"
-        message += "💵  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " ETH " +\
-            str(float("{:,.2f}".format(float(token_price) *
-                float(tx_amount0OutEthUnits)))) + "USD*\n"
+        message += "💠  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " Ξ ETH $" +\
+            str("{:,.2f}".format(float(token_price) *
+                float(tx_amount0OutEthUnits))) + "*\n"
 
-        message += "🪙  *" + \
-            str("{:,.2f}".format(float(tx_amount0OutEthUnits))) + "Tokens*\n"
+        message += "🧩  *" + \
+            str("{:,.2f}".format(float(tx_amount0OutEthUnits))) + \
+            " " + token_name + "*\n"
 
-        message += "⚪️ *Price: " + \
+        message += "💵 *$" + \
             str("{:,.8f}".format(float(token_price))) + "*\n"
-        message += "🔘 *Market Cap: $" + \
-            str("{:,.2f}".format(float(market_cap))) + "*\n"
+
+        if is_new_holder:
+            message += "✅ *New Holder!*\n"
+        else:
+            message += "❌ *Not New Holder!*\n"
+
+        message += "📂 *[Address](https://etherscan.io/address/" + tx_from + ")*" + \
+            " | *[TX](https://etherscan.io/tx/" + tx_hash + ")*" + "\n"
+
         message += "\n"
 
-        message += "🛳 *Volume 24h: $" + \
+        message += "🔘 *Market Cap: $" + \
+            str("{:,.2f}".format(float(market_cap))) + "$*\n"
+
+        message += "⭐️ *Volume 24h: $" + \
             str("{:,.2f}".format(float(volume_24h))) + "*\n"
-        message += "🔫 *Taxes B/S | " + \
+        message += "🧸 *[Holder count]:" + str(token_holders) + "*\n"
+        message += "🔪 *Taxes B/S | " + \
             str(buy_tax) + "/" + str(sell_tax) + "%*\n"
 
-        message += "🧸 *Holder count: " + str(token_holders) + "*\n"
+        message += "\n"
 
-        message += "🪪 [TX](https://etherscan.io/tx/" + tx_hash + ")" + \
-            " | [Address](https://etherscan.io/address/" + tx_from + ")\n"
-        message += "📊 [Explorer](https://www.dextools.io/app/en/ether/pair-explorer/" + \
-            contract.address + ")\n"
-        message += "🗳 [Buy](https://app.uniswap.org/#/swap?outputCurrency=" + \
-            user_config['token_address'] + ")\n"
-        message += "[Website](" + user_config['websiteurl'] + ")\n"
-        message += "[Twitter](" + user_config['twitterurl'] + ")\n"
-        message += "[Telegram](" + user_config['telegramurl'] + ")\n"
+        message += "📊 *[Chart](https://www.dextools.io/app/en/ether/pair-explorer/" + contract.address + ")*" + " ▫️ *[Buy](https://app.uniswap.org/#/swap?outputCurrency=" + \
+            user_config['token_address'] + ")*\n"
+
+        message += "*[Website](" + user_config['websiteurl'] + ")* ▫️ *[Twitter](" + \
+            user_config['twitterurl'] + \
+            ")* ▫️ *[Telegram](" + user_config['telegramurl'] + ")*\n"
 
         # escape markdown characters
         message = message.replace("_", "\_")
@@ -192,7 +215,7 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     contract = web3.eth.contract(
         address=local_user_config['pair_address'], abi=uniswap_pair_abi)
 
-    event = {"args": {"sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "to": "0x5607f96D4f0088833a10377F7f43eb19bc24B171", "amount0In": 0, "amount1In": 575000000000000000, "amount0Out": 3428621956017115909243531, "amount1Out": 0}, "event": "Swap", "logIndex": 283,
+    event = {"args": {"sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "to": "0x5607f96D4f0088833a10377F7f43eb19bc24B171", "amount0In": 0, "amount1In": 575000000000000000, "amount0Out": 7815812167829902108223067, "amount1Out": 0}, "event": "Swap", "logIndex": 283,
              "transactionIndex": 143, "transactionHash": "0x9505889816f9432ed314d6942804e7b5da889b9fa87139210244da68ad3074de", "address": "0x4674D4a748f787e5Cb81e73290d1B96A1a788EFC", "blockHash": "0x7f93eecb33d5e17f3577fd0917e0b929eb58ed5589a3463a7ef4f68915812d59", "blockNumber": 16378312}
     await handle_event(event, contract, update, local_user_config)
 
