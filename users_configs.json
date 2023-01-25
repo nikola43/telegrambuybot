@@ -1,24 +1,13 @@
 [
-  {
-    "user_id": 5781208163,
-    "token_address": "0x07059f69CDfD236E2399099e54b4BD725dDc1102",
-    "pair_address": "0x4674D4a748f787e5Cb81e73290d1B96A1a788EFC",
-    "chat_id": -891220764,
-    "emoji": "\u26aa\ufe0f",
-    "telegramurl": "https://t.me/",
-    "twitterurl": "https://twitter.com/",
-    "websiteurl": "https://google.com/",
-    "gif": "boop.mp4"
-  },
-  {
-    "user_id": 358896373,
-    "token_address": "0x07059f69CDfD236E2399099e54b4BD725dDc1102",
-    "pair_address": "0x4674D4a748f787e5Cb81e73290d1B96A1a788EFC",
-    "chat_id": -891220764,
-    "emoji": "\u26aa\ufe0f",
-    "telegramurl": "https://t.me/",
-    "twitterurl": "https://twitter.com/",
-    "websiteurl": "https://google.com/",
-    "gif": "boop.mp4"
-  }
+	{
+		"user_id": 358896373,
+		"token_address": "0xEf27252B567F6B3fe35b34A85bE322917abE524A",
+		"pair_address": "0xbA88774e109185Cd09DB1518b17fab72e9122103",
+		"chat_id": -1001552846924,
+		"emoji": "\u26aa\ufe0f",
+		"telegramurl": "https://t.me/",
+		"twitterurl": "https://twitter.com/",
+		"websiteurl": "https://google.com/",
+		"gif": "boop.mp4"
+	}
 ]

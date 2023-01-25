@@ -6,6 +6,7 @@ from web3 import Web3
 import asyncio
 from moralis import evm_api
 import requests
+from utils import extract_event_data, get_token_price_and_volume, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, calc_circulating_supply, calc_market_cap, create_emoji_text, create_message, create_keyboard
 
 
 # add your blockchain connection information
@@ -30,172 +31,73 @@ async def handle_event(event, contract, update: Update, user_config):
     print(Web3.toJSON(event))
     # print()
 
-    print("New Buy!")
     router_addess = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 
-    # tx_hash = event['transactionHash']
-    tx_hash = event['transactionHash'].hex()
-    tx_to = event['args']['to']
-    # tx_from = event['args']['from']
-    tx_amount1In = event['args']['amount1In']
-    tx_amount0Out = event['args']['amount0Out']
-    tx_sender = event['args']['sender']
-    address = event['address']
-    tx_amount1InEthUnits = web3.fromWei(tx_amount1In, 'ether')
-    tx_amount0OutEthUnits = web3.fromWei(tx_amount0Out, 'ether')
+    # extract event data
+    tx_hash, to, amount1In, amount0Out, sender, address = extract_event_data(
+        event)
+    amount1InEthUnits = web3.fromWei(amount1In, 'ether')
+    amount0OutEthUnits = web3.fromWei(amount0Out, 'ether')
 
     # check if to address is the router address
-    if tx_to != router_addess and address == user_config['pair_address'] and tx_amount1InEthUnits > 0.0 and tx_amount0OutEthUnits > 0.0:
-        # print("tx_hash: " + tx_hash)
-        # print("tx_to: " + tx_to)
-        # print("tx_amount0In: " + str(tx_amount0In))
-        # print("tx_amount1Out: " + str(tx_amount1Out))
+    is_buy_tx = to != router_addess and address == user_config['pair_address'] and amount1InEthUnits > 0.0 and amount0OutEthUnits > 0.0
 
-        # convert tx_amount1Out to eth value
-        tx_amount1InEthUnits = web3.fromWei(tx_amount1In, 'ether')
-        tx_amount0OutEthUnits = web3.fromWei(tx_amount0Out, 'ether')
-        # print("tx_amount0InEthUnits: " + str(tx_amount0InEthUnits))
-        # print("tx_amount1OutEthUnits: " + str(tx_amount1OutEthUnits))
-
-        # token_price = get_token_price(moralis_api_key, token_address)
-        # print(token_price)
-
-        # convert tx_amount1Out to usd value
+    if is_buy_tx:
+        print("New Buy!")
 
         emoji_text = ""
         emoji_icon = user_config['emoji']
         emoji_value = 0.01
-        emoji_count = int(float(tx_amount1InEthUnits) / emoji_value)
+        emoji_count = int(float(amount1InEthUnits) / emoji_value)
 
         # add one emoji for every 0.01 eth
         for x in range(emoji_count):
             emoji_text += emoji_icon
 
         # get 24 hour volume from https://api.dexscreener.com/latest/dex/tokens/
-        response = requests.get(
-            "https://api.dexscreener.com/latest/dex/tokens/" + user_config['token_address'])
-        data = response.json()
-        volume_24h = data['pairs'][0]['volume']['h24']
-        token_price = data['pairs'][0]['priceUsd']
+        token_price, volume_24h = get_token_price_and_volume(
+            user_config['token_address'])
 
         # get token holders
-        response = requests.get(
-            "https://api.ethplorer.io/getTokenInfo/" + user_config['token_address'] + "?apiKey=freekey")
-        data = response.json()
-        # print(data)
-        token_holders = data['holdersCount']
-        total_supply = data['totalSupply']
-        token_name = data['name']
+        token_holders, total_supply, token_name = get_token_holders_supply_name(
+            user_config['token_address'])
 
-        # Get ERC20-Token Account Balance for TokenContractAddress
-        response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
-                                user_config['token_address']+"&address=0x000000000000000000000000000000000000dEaD&tag=latest&apikey=" + etherscan_api_key)
-        data = response.json()
-        dead_wallet_balance = data['result']
+        # Get dead address token balance
+        dead_wallet_balance = get_token_dead_balance(
+            user_config['token_address'])
 
-        response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
-                                user_config['token_address']+"&address="+tx_to+"&tag=latest&apikey=" + etherscan_api_key)
-        data = response.json()
-        wallet_token_balance = data['result']
+        # Get Token balance for wallet
+        wallet_token_balance = get_token_balance(
+            user_config['token_address'], to)
 
         is_new_holder = False
 
-        # check if wallet_token_balance is equal to tx_amount0Out
+        # check if wallet_token_balance is equal to amount0Out
         print("wallet_token_balance: " + wallet_token_balance)
-        print("tx_amount0Out: " + str(tx_amount0Out))
-        if str(wallet_token_balance) == str(tx_amount0Out):
+        print("amount0Out: " + str(amount0Out))
+        if str(wallet_token_balance) == str(amount0Out):
             print("New Wallet!")
             is_new_holder = True
 
-        # calc market cap. total supply - dead wallet balance
-        circulating_supply = web3.fromWei(
-            float(total_supply) - float(dead_wallet_balance), 'ether')
-
-        market_cap = float(circulating_supply) * float(token_price)
-
         # get token buy sell taxes
-        response = requests.get(
-            "https://aywt3wreda.execute-api.eu-west-1.amazonaws.com/default/IsHoneypot?chain=eth&token=" + user_config['token_address'])
-        data = response.json()
-        buy_tax = data['BuyTax']
-        sell_tax = data['SellTax']
+        buy_tax, sell_tax = get_token_taxes(user_config['token_address'])
 
-        message = ""
+        # calc market cap. total supply - dead wallet balance
+        circulating_supply = calc_circulating_supply(
+            total_supply, dead_wallet_balance)
 
-        # add link to etherscan using markdown
-        # add gif to message
-        # set bold for token name
+        market_cap = calc_market_cap(circulating_supply, token_price)
 
-        message += "*" + token_name + " Buy!*\n"
-        message += emoji_text + "\n\n"
-        message += "💠  *" + str(float("{:,.2f}".format(float(tx_amount1InEthUnits)))) + " ETH $" +\
-            str("{:,.0f}".format(float(token_price) *
-                float(tx_amount0OutEthUnits))) + "*\n"
+        emoji_text = create_emoji_text(
+            amount1InEthUnits, user_config['emoji'])
 
-        message += "🧩  *" + \
-            str("{:,.0f}".format(float(tx_amount0OutEthUnits))) + \
-            " " + token_name + "*\n"
-
-        message += "💵 *$" + \
-            str("{:,.8f}".format(float(token_price))) + "*\n"
-
-        if is_new_holder:
-            message += "✅ *New Holder!*\n"
-        else:
-            message += "❌ *Not New Holder!*\n"
-
-        message += "📂 *[Address](https://etherscan.io/address/" + tx_to + ")*" + \
-            " | *[TX](https://etherscan.io/tx/" + tx_hash + ")*" + "\n"
-
-        message += "\n"
-
-        message += "🔘 *Market Cap $" + \
-            str("{:,.0f}".format(float(market_cap))) + "*\n"
-
-        message += "⭐️ *24h Volume $" + \
-            str("{:,.0f}".format(float(volume_24h))) + "*\n"
-        message += "🧸 *[Holders](https://etherscan.io/token/tokenholderchart/" + \
-            user_config['token_address'] + ") " + str(token_holders) + "*\n"
-
-        message += "🔪 *Taxes B/S | " + \
-            str(buy_tax) + "/" + str(sell_tax) + "*\n"
-
-        message += "\n"
-
-        message += "*[Chart](https://www.dextools.io/app/en/ether/pair-explorer/" + user_config['pair_address'] + ")*" + " ▫️ *[Buy](https://app.uniswap.org/#/swap?outputCurrency=" + \
-            user_config['token_address'] + ")*\n"
-
-        message += "*[Website](" + user_config['websiteurl'] + ")* ▫️ *[Twitter](" + \
-            user_config['twitterurl'] + \
-            ")* ▫️ *[Telegram](" + user_config['telegramurl'] + ")*\n"
-
-        # escape markdown characters
-        message = message.replace("_", "\_")
-        message = message.replace("`", "\`")
-        message = message.replace(".", "\.")
-        message = message.replace("%", "\%")
-        message = message.replace("-", "\-")
-        message = message.replace("+", "\+")
-        message = message.replace("#", "\#")
-        message = message.replace("=", "\=")
-        message = message.replace("|", "\|")
-        message = message.replace("!", "\!")
+        message = create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price,
+                                 volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap)
 
         print(message)
         print()
 
-        # send message to chat id
-        # await update.effective_chat.send_message(message)
-
-        """Sends a message with three inline buttons attached."""
-        keyboard = [
-            [
-                InlineKeyboardButton("▫️ UR AD HERE ▫️", callback_data="1"),
-                InlineKeyboardButton(
-                    "▫️ GET BOOP ▫️", callback_data="2"),
-            ],
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply_markup = create_keyboard()
 
         # send video file to chat id
         # get video file input from local file system
@@ -364,6 +266,7 @@ async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await update.message.reply_text(text)
 
+
 async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -404,7 +307,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     message += "💦 Liquidity: $" + str(token_info['liquidity']) + "\n"
     message += "💎 Market Cap (FDV): $" + \
         str(token_info['fdv_market_cap']) + "\n"
-    
+
     print(message)
     await update.effective_chat.send_message(message)
 
@@ -689,7 +592,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(
-        "5960863904:AAFdz0O5CwzglyFJ_Hz_nTkJqiZ-zUuBZ_8").build()
+        "5879284684:AAEAbG1GpcOTWoNMPjTjghW-oshef-KOSmM").build()
 
     app.add_handler(CommandHandler("test", send_message))
     app.add_handler(CommandHandler(
