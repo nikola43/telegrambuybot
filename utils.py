@@ -1,8 +1,11 @@
+import json
 import requests
 from web3 import Web3
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from moralis import evm_api
 
 etherscan_api_key = "UVGM9GGPHXP755SK9DKI3BED9EBA5RC16P"
+
 
 
 def extract_event_data(event):
@@ -21,55 +24,148 @@ def extract_event_data(event):
     return tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits
 
 
-def get_token_price_and_volume(token_address: str):
+def get_token_info(api_key, token_address):
+    params = {
+        "addresses": [token_address],
+        "chain": "eth",
+    }
+
+    result = evm_api.token.get_token_metadata(
+        api_key=api_key,
+        params=params,
+    )
+
+    return {
+        "name": result[0]['name'],
+        "symbol": result[0]['symbol'],
+    }
+
+def get_token_price(api_key, token_address):
+    params = {
+        "address": token_address,
+        "chain": "eth"
+    }
+
+    result = evm_api.token.get_token_price(
+        api_key=api_key,
+        params=params,
+    )
+    return result['usdPrice']
+
+
+async def get_token_price_and_volume(token_address: str):
+    volume_24h = None
+    token_price = None
+
     response = requests.get(
         "https://api.dexscreener.com/latest/dex/tokens/" + token_address)
-    data = response.json()
-    volume_24h = 0
-    token_price = 0
 
-    if data['pairs']:
-        volume_24h = data['pairs'][0]['volume']['h24']
-        token_price = data['pairs'][0]['priceUsd']
+    if response is not None:
+        data = response.json()
+        if data['pairs']:
+            volume_24h = data['pairs'][0]['volume']['h24']
+            token_price = data['pairs'][0]['priceUsd']
 
     return token_price, volume_24h
 
 
-def get_token_holders_supply_name(token_address: str):
+async def get_token_holders_supply_name(token_address: str):
+    token_holders = None
+    total_supply = None
+    token_name = None
+
     response = requests.get(
         "https://api.ethplorer.io/getTokenInfo/" + token_address + "?apiKey=freekey")
-    data = response.json()
-    # print(data)
-    token_holders = data['holdersCount']
-    total_supply = data['totalSupply']
-    token_name = data['name']
+
+    if response is not None:
+        data = response.json()
+        token_holders = data['holdersCount']
+        total_supply = data['totalSupply']
+        token_name = data['name']
 
     return token_holders, total_supply, token_name
 
 
-def get_token_dead_balance(token_address: str):
+async def get_token_dead_balance(token_address: str):
     response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
                             token_address+"&address=0x000000000000000000000000000000000000dEaD&tag=latest&apikey=" + etherscan_api_key)
-    data = response.json()
 
-    return data['result']
+    if response is not None:
+        data = response.json()
+        return data['result']
+
+    return None
 
 
-def get_token_balance(token_address: str, wallet_address: str):
+async def get_token_balance(token_address: str, wallet_address: str):
     response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
                             token_address+"&address="+wallet_address+"&tag=latest&apikey=" + etherscan_api_key)
-    data = response.json()
-    return data['result']
+    if response is not None:
+        data = response.json()
+        return data['result']
+
+    return None
 
 
-def get_token_taxes(token_address: str):
+async def get_token_taxes(token_address: str):
+    buy_tax = None
+    sell_tax = None
+
     response = requests.get(
         "https://aywt3wreda.execute-api.eu-west-1.amazonaws.com/default/IsHoneypot?chain=eth&token=" + token_address)
-    data = response.json()
-    buy_tax = data['BuyTax']
-    sell_tax = data['SellTax']
+
+    if response is not None:
+        data = response.json()
+        buy_tax = data['BuyTax']
+        sell_tax = data['SellTax']
 
     return buy_tax, sell_tax
+
+
+def get_pair_address(api_key, token_address):
+
+    # testnet 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
+    #  mainnet 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+
+    tokens = [
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  # USDC
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7",  # USDT
+        "0x6B175474E89094C44Da98b954EedeAC495271d0F",  # DAI
+    ]
+
+    for token in tokens:
+        params = {
+            "exchange": "uniswapv2",
+            "token0_address": token_address,
+            "token1_address": token,
+            "chain": "eth",
+        }
+
+        result = evm_api.defi.get_pair_address(
+            api_key=api_key,
+            params=params,
+        )
+
+        if result['pairAddress']:
+            return result['pairAddress']
+
+    return None
+
+
+async def get_pair_addressV2(token_address):
+
+    pair_address = None
+
+    response = await requests.get(
+        "https://api.dexscreener.com/latest/dex/tokens/" + token_address)
+
+    if response is not None:
+        data = response.json()
+        if data['pairs']:
+            pair_address = data['pairs'][0]['pairAddress']
+
+    return pair_address
 
 
 def calc_circulating_supply(total_supply: str, dead_wallet_balance: str):
@@ -117,6 +213,30 @@ def create_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
+
+
+def is_valid_token_address(token_address: str) -> bool:
+    """
+    Check if the token address is valid.
+    """
+    try:
+        # check if the token address is valid
+        if not Web3.isAddress(token_address):
+            return False
+
+        # check if the token address is a contract
+        if not Web3.eth.getCode(token_address):
+            return False
+
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+def read_json_file(file_name):
+    with open(file_name, 'r') as f:
+        return json.load(f)
 
 
 def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap):
