@@ -3,14 +3,22 @@ import requests
 from web3 import Web3
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from moralis import evm_api
+from urllib.parse import urlparse
 
-etherscan_api_key = "UVGM9GGPHXP755SK9DKI3BED9EBA5RC16P"
 
+
+
+def is_valid_url(url):
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc, result.path])
+    except ValueError:
+        return False
 
 
 def extract_event_data(event):
-    tx_hash = event['transactionHash']
-    # tx_hash = event['transactionHash'].hex()
+    # tx_hash = event['transactionHash']
+    tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
@@ -39,6 +47,7 @@ def get_token_info(api_key, token_address):
         "name": result[0]['name'],
         "symbol": result[0]['symbol'],
     }
+
 
 def get_token_price(api_key, token_address):
     params = {
@@ -86,7 +95,7 @@ async def get_token_holders_supply_name(token_address: str):
     return token_holders, total_supply, token_name
 
 
-async def get_token_dead_balance(token_address: str):
+async def get_token_dead_balance(etherscan_api_key: str, token_address: str):
     response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
                             token_address+"&address=0x000000000000000000000000000000000000dEaD&tag=latest&apikey=" + etherscan_api_key)
 
@@ -97,7 +106,7 @@ async def get_token_dead_balance(token_address: str):
     return None
 
 
-async def get_token_balance(token_address: str, wallet_address: str):
+async def get_token_balance(etherscan_api_key: str, token_address: str, wallet_address: str):
     response = requests.get("https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=" +
                             token_address+"&address="+wallet_address+"&tag=latest&apikey=" + etherscan_api_key)
     if response is not None:
@@ -157,7 +166,7 @@ async def get_pair_addressV2(token_address):
 
     pair_address = None
 
-    response = await requests.get(
+    response = requests.get(
         "https://api.dexscreener.com/latest/dex/tokens/" + token_address)
 
     if response is not None:
@@ -215,7 +224,7 @@ def create_keyboard():
     return reply_markup
 
 
-def is_valid_token_address(token_address: str) -> bool:
+def is_valid_token_address(web3, token_address: str) -> bool:
     """
     Check if the token address is valid.
     """
@@ -225,7 +234,7 @@ def is_valid_token_address(token_address: str) -> bool:
             return False
 
         # check if the token address is a contract
-        if not Web3.eth.getCode(token_address):
+        if not web3.eth.getCode(token_address):
             return False
 
         return True

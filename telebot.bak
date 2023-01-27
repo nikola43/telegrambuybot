@@ -1,5 +1,4 @@
 
-import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters, CallbackQueryHandler
 import json
@@ -9,17 +8,12 @@ from moralis import evm_api
 import requests
 from utils import extract_event_data, get_token_price_and_volume, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, calc_circulating_supply, calc_market_cap, create_emoji_text, create_message, create_keyboard, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
 import openai
-from chatgpt_wrapper import ChatGPT
-from revChatGPT.ChatGPT import Chatbot
-from gtts import gTTS
 
 # Replace YOUR_API_KEY with your OpenAI API key
 openai.api_key = "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"
 moralis_api_key = "LJ2liXqSHdL6XOad7XhWqTP30Wi0mIIqSf1RDnemTPXYwKFm5L3Ux9WeaxTFCpxB"
 etherscan_api_key = "UVGM9GGPHXP755SK9DKI3BED9EBA5RC16P"
 infura_api_key = "d39a866f4f6d49b9916f9269bf880110"
-token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..d6_8MZORtzLXUPzU.IwHBbx3yYKi4zAr9eOGo32zdn-DpQiWfGT_5nHEyo4iBdC9fggx4xoH04cq7xRABbUyLlF4hYx35OhjJan6uB2Cx8R9lONkX040n13WjwvEE3kGpEzeTPOzG83GTUcBGRccEXyGNnrs6RidTk84Nj_Cibfj04eJPQg5VpmZxywNBcV6-MTIm2JRO8cTPVB8VajdQp9w_jnMoiaETx5t5vXJsYUeiq_sqsn9ktY344Iy0csZQlSyGV-V7DAtQPLWEzefsI_nZWxD4o7sr6flwIt09ZcPruuCxVDFZw1YW4Lo9g-PGvTLn0UtQW9yjgrttl3_mJ91rc8M398pYh2fa9Qn2Wxwtth-IKLDE3qg9UprxO8bkqHZYVMVueaLHYFEbe50LMZcfKl4g4n28j8EleIcIkRjJc2GOWMEGGxIXmro8FZrxG1Grpj01j3gvk6RSaPl0MLnfzs7DXiNIwc_K1qiKUEht8sc3Z0tlOI70CmP8rIAQTn9lKXzbAAU8z5yd-Rdwxhdh51j9i-OeOdClNfEq9MmNC5U_6qCv0OjbKslo-m3iJYHslzgPeOb_ZM8zambwPyMUNR1cMPsEsZDwm5aKh5ALek6Bm0NUP4sET-rT1HhRF0WNUPcN-u8JRmCSHXiLOqu7_eB_yLZKEOTNorw7nbYUXDTOUho6K6wQUFRm3oRvL7EUVMLYBR_jHP_1BpTCIIzJVA8piFtmOwWlMXeahxlq-QpWhuhLIuJbcVGd57KbPk4ciGEq43nQGrCeYAXH8zsCEbLB2o_Iue-QSlSddSONq0zHjUfwlKhEPowuFxG0CDPSWNIzBzQxRRsjwuZtwM9PZzid2JVh1rfPJbv-iJs8ozZ8QP136708MkmKbINvYOkizEW0ydo9VIteqFaCHYTg1nlP0smlzu4ZHvMZtyDYJfbqPSiG7gXrKz1QvyQT9WCFEci4r64cFT-5QG2szH6RxEI66ocKmbXhst7SwXQwhlpm5WmqB5GlC3HNYmRH6JuZYtew-LEQAY9lvJ69nqx37oYWZCBkXG_hjTxoBdHccRaxfhIL8HmD9x0sm5o5S4SHxQdsLCmCZw74kOywJ6Z1r77A6ewUGPoGqr2ny_bpeBUz5jex79gTPsF7ZNG8z0ELOlWdilQI_DiL6Yy-2-ZBbsJnZkajmUZF9sMBBhuACU1BaUziDrJX1ISMg7TmBr1lsBnLUKFdW8znX8zQDiYrHHinNNh_FGfVwSDRYL3wwbeS_7uH-WhxFUiLrfgJvYP0ReFJI1u_mYuVCUj4wTTaIGryZs6porLeuT8YbY40D57eY6gQJr0uR6__XZgXAAfNjsgghuyqXNxav0AUaWi3ZR73QFihJRBeHriD2KBa071a29vVIIK8F8R5XnU81CKJkCmPDtgP3abontFj0DtAZLXLU47O93idOI8dh0hE-_4_T3M8kQEJHDI28Z5PIrKUwan2Pz5fY0Xv_kLcLgYlGFo-maLnL-KSa8NXLaXtXUkMrwkHrbQk5QjRDRtnQwcfXSgcXRmQiImlIF4hG0ojnx9cUFfvxUkYJ_PJ9H2W31RvANpIFW7uHIlSGNnkS1oOf1eTPPsKtG5iJxAmn5XZQqGHWntUAxMi0OBNteEO4OhyPZfwSev0R4Jqpxwl36PrmGYJuV4YuVM8bQ5tj_GquXV9hymAaFg1OlfBO3Zj-aLo84G53iyoC8cMCNyWdKXG5RMIj3E96USnlYGAyiL3sfqI8TwIIB5sNIK9vlEr_CmghlXaTGWYzzUUUG0UJK1oJfZR87E-cttrCFs7atQMFBuhj80lHJEFMADUNdU9eScKBAzq8H_eywojLoDCA0GEcl8YlVVRVdiuC91W5AWWOXEyFUOaUSIA6s_DoElxDCMF3ATw9sHwA1QoFjGKqrg_auSxiqhMeEr96kGMzam9fI0Qe8tl6m1zfraKBuVcH_RHGxY3XtfMOd0tODG9tpY9vjPeGThDE0tKJM7vJKHMndMtP5cUhODobjj0w--8fAduEfOy-WCbzCJ1X05mKVLAmY61nUEkkfB2DOnEaoM6eEje93_BgkLmGpjFpOKM21jybZCtOtmGdKN-_Sh7B-pCiLF9ErLNHS2gjc2s6cK_4ZeVr6O1W-cWHsm5odz1XdiyIfz3M3IwotExVZLG-mliqXBjvf6P3BeNKZ1uWGDk54jJua9fQiDkbcwuYuDyE5bnpUFGx0MaR9u3R4YLg7Hxq5FHng7ffyHMUmSvH0h4FeQao1_lG5yvOdoB-0aeXnjvrvhftqFh26kR7I_NGK3FyyH_T-WrzbCoYAESmtOCdWOi9RSmlACSJvGQ7j92FxvBfWkq0qxOF672EQH8KDp4k1Ew20W_Rlb6qxxhBfZoyVGQ6h6VYSdO0GHRD4isoXLBa79l_SPm9gQSz7zOltBLIFk2x_3FTavt7sWQ48Iu5lM5-bfgzwQR3hnlLQPeDkgbIcsxU0-rFyiwTjjppIgGI6OQ5dXoQzlCdCyhT7PUC84fKVABIUjpbQq5bROV3BSiRzpxyawsj2cwz7gP-w4.VzfelliifNurdGWQL9z1pQ"
-
 
 # add your blockchain connection information
 infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
@@ -32,9 +26,6 @@ uniswap_router_abi = json.loads('[{"inputs":[{"internalType":"address","name":"_
 
 # create dict for store the users id and the task id
 users_tasks = {}
-chatbot = Chatbot({
-    "session_token": token
-}, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
 
 async def handle_event(event, update: Update, user_config):
@@ -87,10 +78,12 @@ async def handle_event(event, update: Update, user_config):
         print(message)
         print()
 
+        reply_markup = create_keyboard()
+
         # get video file input from local file system
         # send video to chat id
         video = open(user_config['gif'], 'rb')
-        await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2")
+        await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2", reply_markup=reply_markup)
 
 
 async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -127,7 +120,6 @@ async def run_buybot(contract, update: Update, user_config):
             await handle_event(Swap, update, user_config)
         await asyncio.sleep(2)
 
-
 async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # create description of the buybot
@@ -158,7 +150,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     # validate the token address
-    if not is_valid_token_address(web3, Web3.toChecksumAddress(args[0])):
+    if not is_valid_token_address(web3.toChecksumAddress(args[0])):
         await update.message.reply_text("Invalid token address.")
         return
 
@@ -177,9 +169,9 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # send the message
     message = ""
     message += "⚡ Net️work: Ethereum" + "\n"
-    message += "💰 Price: $" + str(token_info['price']) + "\n"
-    price1h_emoji = "📈" if token_info['price_1h'] > 0 else "📉"
-    price24h_emoji = "📈" if token_info['price_24h'] > 0 else "📉"
+    message += "💰 Price: $" + str(token_info['price']) + "%" + "\n"
+    price1h_emoji = "📉" if token_info['price_1h'] > 0 else "📈"
+    price24h_emoji = "📉" if token_info['price_24h'] > 0 else "📈"
     message += price1h_emoji + " 1h: " + \
         str(token_info['price_1h']) + "%" + "\n"
     message += price24h_emoji + " 24h: " + \
@@ -447,43 +439,20 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text(message)
 
 
-async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Parses the CallbackQuery and updates the message text."""
+    query = update.callback_query
 
-    # extract the command arguments
-    args = context.args
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    await query.answer()
 
-    # check if the user sent a parameter
-    if not args:
-        await update.message.reply_text("You didn't specify a prompt.")
-        return
+    await update.effective_chat.send_message(text=f"Selected option: {query.data}")
+    # await query.edit_message_text(text=f"Selected option: {query.data}")
 
-    question = ""
-
-    for i in range(len(args)):
-        question += args[i]
-        if i < len(args) - 1:
-            question += " "
-    print(question)
-
-    # set bot typing status
-    await update.effective_chat.send_chat_action("typing")
-
-    # You can specify custom conversation and parent ids. Otherwise it uses the saved conversation (yes. conversations are automatically saved)
-    response = chatbot.ask(question, conversation_id=None, parent_id=None)
-
-    # text to speech response
-    tts = gTTS(response['message'], lang='en', tld='co.uk', slow=False)
-    # get user id from the update
-    user_id = update.effective_user.id
-    # gen filename
-    filename = f"{user_id}.mp3"
-    # save the mp3 file
-    tts.save(filename)
-
-    await update.effective_chat.send_voice(filename)
-
-    # remove the mp3 file
-    os.remove(filename)
+    if query.data == "2":
+        # open new chat with chat id 358896373
+        await context.bot.send_message(chat_id=358896373, text="/start")
 
 
 async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -496,21 +465,21 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text("You didn't specify a prompt.")
         return
 
-    question = ""
+    # Generate a response
+    model_engine = "text-davinci-003"
+    prompt = (f"{args[0]}")
 
-    for i in range(len(args)):
-        question += args[i]
-        if i < len(args) - 1:
-            question += " "
-    print(question)
+    completions = openai.Completion.create(
+        engine=model_engine,
+        prompt=prompt,
+        max_tokens=1024,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
 
-    # set bot typing status
-    await update.effective_chat.send_chat_action("typing")
-
-    # You can specify custom conversation and parent ids. Otherwise it uses the saved conversation (yes. conversations are automatically saved)
-    response = chatbot.ask(question, conversation_id=None, parent_id=None)
-
-    await update.effective_chat.send_message(response['message'])
+    message = completions.choices[0].text
+    await update.effective_chat.send_message(message.strip())
 
 
 if __name__ == "__main__":
@@ -518,7 +487,6 @@ if __name__ == "__main__":
         "5879284684:AAEAbG1GpcOTWoNMPjTjghW-oshef-KOSmM").build()
 
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
-    app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
 
     app.add_handler(CommandHandler("test", send_message))
     app.add_handler(CommandHandler(
@@ -534,6 +502,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("start", start_buybot))
     app.add_handler(CommandHandler("stop", stop_buybot))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
+    app.add_handler(CallbackQueryHandler(button))
     app.add_handler(CommandHandler("description", buybot_description))
     app.add_handler(CommandHandler("price", call_get_price_bot))
 
