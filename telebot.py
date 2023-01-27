@@ -128,13 +128,14 @@ async def run_buybot(contract, update: Update, user_config):
         await asyncio.sleep(2)
 
 
-async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
+async def buybot_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # create description of the buybot
-    text = "\n◽️ Hi I'm Boop. Welcome to V1. Boop. ◽️" + "\n"
-    text += "Type in /description to get started" + "\n\n"
+    text = "\n◽️ Welcome to ai bot. ◽️" + "\n"
     text += "This is a list of all the things I'm capable of at the moment. " + "\n\n"
     text += "Please add me to your group first before using any of my commands." + "\n\n"
+    text += "- Type /ai(TEXT) | to chat with ai chatbot" + "\n\n"
+    text += "- Type /aivoice(TEXT) | to chat with ai chatbot and reply you with voice audio" + "\n\n"
+    text += "- Type /price(CONTRACT ADDRESS) | to see token price and info" + "\n\n"
     text += "- Type /address(CONTRACT ADDRESS) | to track your coin" + "\n\n"
     text += "- Type /emoji(EMOJI) | to set a custom emoji" + "\n\n"
     text += "- Type /website(WEBSITE) | to set a custom website url" + "\n\n"
@@ -143,6 +144,7 @@ async def buybot_description(update: Update, context: ContextTypes.DEFAULT_TYPE)
     text += "- Type /gif | while you send your mp4 file to set a custom gif" + "\n\n"
     text += "- Type /start | to start the bot" + "\n\n"
     text += "- Type /stop | to stop the bot" + "\n\n"
+    text += "- Type /help | to show all commands" + "\n\n"
     text += "Click here for a tutorial on how to set me up"
 
     await update.message.reply_text(text)
@@ -519,22 +521,17 @@ if __name__ == "__main__":
 
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
     app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
-
-    app.add_handler(CommandHandler("test", send_message))
-    app.add_handler(CommandHandler(
-        "address", buybot_configaddress))
-    app.add_handler(CommandHandler("emoji", buybot_configemoji))
-    app.add_handler(CommandHandler(
-        "website", buybot_configwebsiteurl))
-    app.add_handler(CommandHandler(
-        "telegram", buybot_configtelegramurl))
-    app.add_handler(CommandHandler(
-        "twitter", buybot_configtwitterurl))
-    # app.add_handler(CommandHandler("buybotconfigif", buybotconfigif))
-    app.add_handler(CommandHandler("start", start_buybot))
-    app.add_handler(CommandHandler("stop", stop_buybot))
-    app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
-    app.add_handler(CommandHandler("description", buybot_description))
     app.add_handler(CommandHandler("price", call_get_price_bot))
+    app.add_handler(CommandHandler("address", buybot_configaddress))
+    app.add_handler(CommandHandler("emoji", buybot_configemoji))
+    app.add_handler(CommandHandler("website", buybot_configwebsiteurl))
+    app.add_handler(CommandHandler("telegram", buybot_configtelegramurl))
+    app.add_handler(CommandHandler("twitter", buybot_configtwitterurl))
+    app.add_handler(CommandHandler("startbuybot", start_buybot))
+    app.add_handler(CommandHandler("stopbuybot", stop_buybot))
+    app.add_handler(CommandHandler("help", buybot_help))
+    app.add_handler(CommandHandler("test", send_message))
+    app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
+    # app.add_handler(CommandHandler("buybotconfigif", buybotconfigif))
 
     app.run_polling()

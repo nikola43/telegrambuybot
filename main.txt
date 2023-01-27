@@ -18,15 +18,37 @@ https://twitter.com/ethereum
 https://www.google.com/
 
 
-
+ai - Chat with ai chatbot
+aivoice - Chat with ai chatbot and reply you with voice audio  
+price - Return token price and info
 address - Set the token address
 emoji - Set the custom emoji
 website - Set the website url
 telegram - Set the telegram url 
 twitter - Set the twitter url
 gif - Set the video / gif
-start - Start the bot
-stop - Stop the bot
+startbuybot - Start the bot
+stopbuybot - Stop the bot
+help - Show all commands
+
+
+
+    app.add_handler(CommandHandler("ai", ask_chat_gpt))
+    app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    app.add_handler(CommandHandler("price", call_get_price_bot))
+    app.add_handler(CommandHandler("address", buybot_configaddress))
+    app.add_handler(CommandHandler("emoji", buybot_configemoji))
+    app.add_handler(CommandHandler("website", buybot_configwebsiteurl))
+    app.add_handler(CommandHandler("telegram", buybot_configtelegramurl))
+    app.add_handler(CommandHandler("twitter", buybot_configtwitterurl))
+    app.add_handler(CommandHandler("start", start_buybot))
+    app.add_handler(CommandHandler("stop", stop_buybot))
+    app.add_handler(CommandHandler("help", buybot_description))
+    app.add_handler(CommandHandler("test", send_message))
+    app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
+
+
+
 
 
 
