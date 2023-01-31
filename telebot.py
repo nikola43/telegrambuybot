@@ -95,6 +95,10 @@ async def handle_event(event, update: Update, user_config):
         await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2")
 
 
+async def setgif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_chat.send_message("Please send me the gif you want to use for the buybot.")
+
+
 async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     users_configs = read_json_file("users_configs.json")
 
@@ -182,7 +186,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # send the message
     message = ""
-    #message += "⚡ Net️work: Ethereum" + "\n"
+    # message += "⚡ Net️work: Ethereum" + "\n"
     message += f"Token name: {token_info['name']}\n"
     message += f"Token symbol: {token_info['symbol']}\n"
     message += "💰 Price: $" + str(token_info['price']) + "\n"
@@ -256,11 +260,25 @@ async def buybotconfigif2(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     caption = update.message.caption
     print(caption)
 
-    # get the file name
-    file_name = video.file_name
-    print(file_name)
-    # save the file
-    await file.download_to_drive(file_name)
+    if (caption == "/gif"):
+        # get the file name
+        file_name = video.file_name
+        print(file_name)
+        # save the file
+        await file.download_to_drive(file_name)
+
+        users_configs = read_json_file("users_configs.json")
+
+        # check if the user already has a config
+        for user_config in users_configs:
+            if user_config["user_id"] == update.effective_user.id:
+                # update the emoji
+                user_config["gif"] = file_name
+                await update.message.reply_text("Video / gif updated.")
+                # write the users_configs variable to the users_configs.json file
+                with open('users_configs.json', 'w') as outfile:
+                    json.dump(users_configs, outfile)
+                return
 
 
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -536,6 +554,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(CommandHandler("test", send_message))
+    app.add_handler(CommandHandler("gif", setgif))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
     # app.add_handler(CommandHandler("buybotconfigif", buybotconfigif))
 
