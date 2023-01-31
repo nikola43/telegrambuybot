@@ -5,9 +5,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from moralis import evm_api
 from urllib.parse import urlparse
 
-
-
-
 def is_valid_url(url):
     try:
         result = urlparse(url)
