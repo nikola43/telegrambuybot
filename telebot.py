@@ -33,9 +33,11 @@ uniswap_router_abi = json.loads('[{"inputs":[{"internalType":"address","name":"_
 users_tasks = {}
 
 # init the chatbot
-chatbot = Chatbot({
-    "session_token": chatGPT_token
-}, conversation_id=None, parent_id=None)  # You can start a custom conversation
+#
+# chatbot = Chatbot({
+#    "session_token": chatGPT_token
+# }, conversation_id=None, parent_id=None)  # You can start a custom conversation
+
 
 async def handle_event(event, update: Update, user_config):
     print(Web3.toJSON(event))
@@ -168,6 +170,8 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "https://api.dexscreener.com/latest/dex/tokens/" + args[0])
     data = response.json()
     token_info = {
+        "name": data['pairs'][0]['baseToken']['name'],
+        "symbol": data['pairs'][0]['baseToken']['symbol'],
         "price": data['pairs'][0]['priceUsd'],
         "price_1h": data['pairs'][0]['priceChange']['h1'],
         "price_24h": data['pairs'][0]['priceChange']['h24'],
@@ -178,7 +182,9 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # send the message
     message = ""
-    message += "⚡ Net️work: Ethereum" + "\n"
+    #message += "⚡ Net️work: Ethereum" + "\n"
+    message += f"Token name: {token_info['name']}\n"
+    message += f"Token symbol: {token_info['symbol']}\n"
     message += "💰 Price: $" + str(token_info['price']) + "\n"
     price1h_emoji = "📈" if token_info['price_1h'] > 0 else "📉"
     price24h_emoji = "📈" if token_info['price_24h'] > 0 else "📉"
