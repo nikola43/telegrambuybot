@@ -106,6 +106,10 @@ async def handle_event(event, update: Update, user_config):
         await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2")
 
 
+async def setgif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_chat.send_message("Please send me the gif you want to use for the buybot.")
+
+
 async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     users_configs = read_json_file("users_configs.json")
 
@@ -268,12 +272,14 @@ async def buybotconfigvideo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     caption = update.message.caption
     print(caption)
 
-    # get the file name
-    file_name = video.file_name
-    print(file_name)
-    # save the file
-    await file.download_to_drive(file_name)
+    if (caption == "/gif"):
+        # get the file name
+        file_name = video.file_name
+        print(file_name)
+        # save the file
+        await file.download_to_drive(file_name)
 
+        users_configs = read_json_file("users_configs.json")
 
 async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
