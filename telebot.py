@@ -6,18 +6,16 @@ import json
 from web3 import Web3
 import asyncio
 import requests
-from utils import extract_event_data, get_token_price_and_volume, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, calc_circulating_supply, calc_market_cap, create_emoji_text, create_message, create_keyboard, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
-import openai
-from chatgpt_wrapper import ChatGPT
+from utils import extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, calc_circulating_supply, calc_market_cap, create_emoji_text, create_message, create_keyboard, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
 from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
+from functools import wraps
 
 # Replace YOUR_API_KEY with your OpenAI API key
-openai.api_key = "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"
 moralis_api_key = "LJ2liXqSHdL6XOad7XhWqTP30Wi0mIIqSf1RDnemTPXYwKFm5L3Ux9WeaxTFCpxB"
 etherscan_api_key = "UVGM9GGPHXP755SK9DKI3BED9EBA5RC16P"
 infura_api_key = "d39a866f4f6d49b9916f9269bf880110"
-chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..d6_8MZORtzLXUPzU.IwHBbx3yYKi4zAr9eOGo32zdn-DpQiWfGT_5nHEyo4iBdC9fggx4xoH04cq7xRABbUyLlF4hYx35OhjJan6uB2Cx8R9lONkX040n13WjwvEE3kGpEzeTPOzG83GTUcBGRccEXyGNnrs6RidTk84Nj_Cibfj04eJPQg5VpmZxywNBcV6-MTIm2JRO8cTPVB8VajdQp9w_jnMoiaETx5t5vXJsYUeiq_sqsn9ktY344Iy0csZQlSyGV-V7DAtQPLWEzefsI_nZWxD4o7sr6flwIt09ZcPruuCxVDFZw1YW4Lo9g-PGvTLn0UtQW9yjgrttl3_mJ91rc8M398pYh2fa9Qn2Wxwtth-IKLDE3qg9UprxO8bkqHZYVMVueaLHYFEbe50LMZcfKl4g4n28j8EleIcIkRjJc2GOWMEGGxIXmro8FZrxG1Grpj01j3gvk6RSaPl0MLnfzs7DXiNIwc_K1qiKUEht8sc3Z0tlOI70CmP8rIAQTn9lKXzbAAU8z5yd-Rdwxhdh51j9i-OeOdClNfEq9MmNC5U_6qCv0OjbKslo-m3iJYHslzgPeOb_ZM8zambwPyMUNR1cMPsEsZDwm5aKh5ALek6Bm0NUP4sET-rT1HhRF0WNUPcN-u8JRmCSHXiLOqu7_eB_yLZKEOTNorw7nbYUXDTOUho6K6wQUFRm3oRvL7EUVMLYBR_jHP_1BpTCIIzJVA8piFtmOwWlMXeahxlq-QpWhuhLIuJbcVGd57KbPk4ciGEq43nQGrCeYAXH8zsCEbLB2o_Iue-QSlSddSONq0zHjUfwlKhEPowuFxG0CDPSWNIzBzQxRRsjwuZtwM9PZzid2JVh1rfPJbv-iJs8ozZ8QP136708MkmKbINvYOkizEW0ydo9VIteqFaCHYTg1nlP0smlzu4ZHvMZtyDYJfbqPSiG7gXrKz1QvyQT9WCFEci4r64cFT-5QG2szH6RxEI66ocKmbXhst7SwXQwhlpm5WmqB5GlC3HNYmRH6JuZYtew-LEQAY9lvJ69nqx37oYWZCBkXG_hjTxoBdHccRaxfhIL8HmD9x0sm5o5S4SHxQdsLCmCZw74kOywJ6Z1r77A6ewUGPoGqr2ny_bpeBUz5jex79gTPsF7ZNG8z0ELOlWdilQI_DiL6Yy-2-ZBbsJnZkajmUZF9sMBBhuACU1BaUziDrJX1ISMg7TmBr1lsBnLUKFdW8znX8zQDiYrHHinNNh_FGfVwSDRYL3wwbeS_7uH-WhxFUiLrfgJvYP0ReFJI1u_mYuVCUj4wTTaIGryZs6porLeuT8YbY40D57eY6gQJr0uR6__XZgXAAfNjsgghuyqXNxav0AUaWi3ZR73QFihJRBeHriD2KBa071a29vVIIK8F8R5XnU81CKJkCmPDtgP3abontFj0DtAZLXLU47O93idOI8dh0hE-_4_T3M8kQEJHDI28Z5PIrKUwan2Pz5fY0Xv_kLcLgYlGFo-maLnL-KSa8NXLaXtXUkMrwkHrbQk5QjRDRtnQwcfXSgcXRmQiImlIF4hG0ojnx9cUFfvxUkYJ_PJ9H2W31RvANpIFW7uHIlSGNnkS1oOf1eTPPsKtG5iJxAmn5XZQqGHWntUAxMi0OBNteEO4OhyPZfwSev0R4Jqpxwl36PrmGYJuV4YuVM8bQ5tj_GquXV9hymAaFg1OlfBO3Zj-aLo84G53iyoC8cMCNyWdKXG5RMIj3E96USnlYGAyiL3sfqI8TwIIB5sNIK9vlEr_CmghlXaTGWYzzUUUG0UJK1oJfZR87E-cttrCFs7atQMFBuhj80lHJEFMADUNdU9eScKBAzq8H_eywojLoDCA0GEcl8YlVVRVdiuC91W5AWWOXEyFUOaUSIA6s_DoElxDCMF3ATw9sHwA1QoFjGKqrg_auSxiqhMeEr96kGMzam9fI0Qe8tl6m1zfraKBuVcH_RHGxY3XtfMOd0tODG9tpY9vjPeGThDE0tKJM7vJKHMndMtP5cUhODobjj0w--8fAduEfOy-WCbzCJ1X05mKVLAmY61nUEkkfB2DOnEaoM6eEje93_BgkLmGpjFpOKM21jybZCtOtmGdKN-_Sh7B-pCiLF9ErLNHS2gjc2s6cK_4ZeVr6O1W-cWHsm5odz1XdiyIfz3M3IwotExVZLG-mliqXBjvf6P3BeNKZ1uWGDk54jJua9fQiDkbcwuYuDyE5bnpUFGx0MaR9u3R4YLg7Hxq5FHng7ffyHMUmSvH0h4FeQao1_lG5yvOdoB-0aeXnjvrvhftqFh26kR7I_NGK3FyyH_T-WrzbCoYAESmtOCdWOi9RSmlACSJvGQ7j92FxvBfWkq0qxOF672EQH8KDp4k1Ew20W_Rlb6qxxhBfZoyVGQ6h6VYSdO0GHRD4isoXLBa79l_SPm9gQSz7zOltBLIFk2x_3FTavt7sWQ48Iu5lM5-bfgzwQR3hnlLQPeDkgbIcsxU0-rFyiwTjjppIgGI6OQ5dXoQzlCdCyhT7PUC84fKVABIUjpbQq5bROV3BSiRzpxyawsj2cwz7gP-w4.VzfelliifNurdGWQL9z1pQ"
+chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..fnrqmB453UkwaCMP.uNB0I8iYfJMUaS_qkjdnFwIo4__rus1MuXuBweQhCppnwd_RkGupjF18bZAabV2Be1XmmA62siP0qHxXj1HK22282Uxo8hB8MQXmM39rX2THf4lt-iE0AuufVJxYcAgcmTPTVimNus0Sjb1PIDdJC33LPsAN_9_GqoICnB44YM40n1raJPyOA_dgz0hwdbTQGErlGxzrvQeA0ymC6eobfdeyrGHlAbAl6MAzB_t457SRBCbkWVwowQzQq0_ZixIAchNEExc9wP34-mIQO8AptXFbpS1L6KMPxI1k38ogUZBB1IPPLD8LHKxx2dwakPxDxhR0ly0tfyv7odHmMmHh498wg1jBN2u8006r-coy4OQiJiAHWfirjbPLgyCvSzGqTjwLx5qvMLwyOn_BYHRKP5ujFEM1QiJfAOzGKz-K8SyyVnmmFGpKddYu5fcw2MZl0HC-oSDWQCCgO279x5dlcgTb3DaQQwA7slOgYeG2Fu-KrLZmvYyFuzJzsGlFiklBvW_8VsYKJmrVafX529Dg7xhf3yPVUoyHt-z1-B76Ay2jyfhvC7l6gLBVrhfgZQvAzELRMwzRUzoDQ59S3xuTqDHEY-uQJRsbdzE2DrhJrHoasyjO6Z8VfRP7XGxOcm78gMKluB3p5YUqZDPVgW7T3hCRSgDGaxtffauXxFOQQZMjpdXHrLvxON93EO9CZbAVoEnbS6F7_gdF0ERPLg1YgGn4NzkxD0va2sVtJ5XuYY1Klvc1Ks7nMnYabiLxEaKYagiTcbMiKfGvLTWG4nDgQcI5-uO7YhTBnSJZ86brjepN0dLx6qzn8RMHDPIbfBBOMT4fy2Y0KAnwDD5UQajfcQHjLTg6bb2BOEJj8QVKLakPWBiZA_tD8Lb0cx7vaQGI5wKdyviSQ9bzkiSeqPXkl2HMXi7Hbbu93TphRvPGNgvn4De7e-5G8OElasjSc4MmPv5YPNSQyyG1844RCv5PZd1eyNQIKdDexN-aNLzeEY9-AnVrIic5aGdCVm8mCkKzO_wFoCxHwmYKgxTRdga4x3RTIgsifTp7x9gsGnM83a3Fbbtn6t-TZyKpwDSL2HjtlniEISAbC-IibPx5LT5ytmVqzW0NJTp9BibR8GMvLzDqNyOWY0UdlFbnldzOpzspWSEihQF4P6zo3Yvyo_LvjDS_Q61AUwrlCYBmngkQZZqn6WPFZ2S-HgknoLqGFEIYsUrcEAQUNMMZxpaKTZDP74DnGuCEKkuHzF8UdWj3k6W2x7vdOvLB7AbaJjiwAKkbiJ-AFhFgbl6gMfNVrE39VNF3KWjAv0yYUdgxVRqJ3CmqjNrsm8QVR4vEwWmkb58clGu8O6WVnRl9QF1mSsSjqP2WG5ZcZlE5pKjDJYsfHlXL_o4Hy1NHqZlucY9Q2AinPMgkLHLYrvnkKJPWsf8u6jLnfLw2BmHadqYKPcFuKotrQECUhmREhgueSXFGbnuWVdipvkPHYDFijlUL7rUem-df3F7mZ8EJqTZ1kSOfukFo9hT4987NQDbVLOBnD4nPLAXJN1M07rHo7kQhf_9MkclAGlvSIx0fuVpKbtGrOHPaKrjUGt4PskyeR-gO4QoHLXqVzTNJKS34Y55-JILQkduDJjmC_qlllqmBFTuq7d6xUDq6yHtuwUwJ2CmJvvKAnypqtiagkBVPfv8X0TQPiLvI1CIq_DY_l81Go7B_FipGog7OD08rbHsMGwXE8DdUpiZDlL1SIkrDlnea4Ttjlsrb13kWH3QN2SrOLU0Kn15A2IULiwachFLWhoFzHEYaNb47Yzx66s-c2UJVV28_YOE3325TBB-SYdAPxP6cx3wTjtW59-lnZz6fuNGJYDAgS4nNu444zl0cgW3VD__eTucEKozSGWUXJ3Tp95aM8ecIBJisMaWvCdHsQhTYhnRC2sSQVlCX-r7Z8wwthdPMt48XY1ChHhp9SmxKzA5aoIhh77CIw5WuBZnIQYjrlXp1hxFmFniokwppOcAa0GTDKS8GaK-AZ0UGjsjA_f7WpAWMvhe-MHCYifcktL_hXVOs57Qj3em254wkjaUJHsZLsklFlNVrr-YPI0Anm04ClEBdZHp6ZNOJ5GdJZ__eJfMdwJZfim32PWWvaKre4tAfnv1pAgPlTQdPDHhdqlGziaAwM6AZbIZMBy1ch-ISZ5MTGbZababuc5JhD_2FKPtA9M8J5q3SlpUONrcmpyUSlq7Lpp3rQiZWSg2MpGXp5j2jD5EqWMzexHYgB030EEILiAcRZMCQHoGE7odBO1GoQcloBGoruOLJhPZDwZoeyzu12QWbUr6WZTDzvjp1dWKUtySI_lkVBNE9H5vAid3mxIgm8VdXuiyJaZv05fy-Rsp9D4jqifPsqUuMESVAjv_vJhPb-Zf27u-vqx44wijek5iKqC27X2X9IExE_eb0euclzup2Uwk4wcCoFKc4pYjNJkwpRb_zOmzVNE7vTJQ-EHu3ucShCs9IKdv3K2_xVLuZPOjne7r3303QYJcbPPJKSDffwswdccijogX1zC-R8yyQqW0a2YQkhPciOf182rt7eJY-.3yiycry9vdmlFK3hWymB0Q"
 telegram_token = "5879284684:AAEAbG1GpcOTWoNMPjTjghW-oshef-KOSmM"
 
 # add your blockchain connection information
@@ -33,10 +31,24 @@ uniswap_router_abi = json.loads('[{"inputs":[{"internalType":"address","name":"_
 users_tasks = {}
 
 # init the chatbot
-#
 # chatbot = Chatbot({
 #    "session_token": chatGPT_token
 # }, conversation_id=None, parent_id=None)  # You can start a custom conversation
+
+# create a decorator called auth that receives USER_ID as an argument with wraps
+USER_ID = 358896373
+
+
+def auth(user_id):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(update, context):
+            if update.effective_user.id == user_id:
+                await func(update, context)
+            else:
+                await update.message.reply_text("You are not authorized to use this bot")
+        return wrapper
+    return decorator
 
 
 async def handle_event(event, update: Update, user_config):
@@ -44,7 +56,7 @@ async def handle_event(event, update: Update, user_config):
 
     # extract event data
     tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits = extract_event_data(
-        event)
+        event, user_config['decimals'])
 
     # check if to address is the router address
     is_buy_tx = to != router_addess and address == user_config[
@@ -54,7 +66,7 @@ async def handle_event(event, update: Update, user_config):
         print("New Buy!")
 
         # get 24 hour volume from https://api.dexscreener.com/latest/dex/tokens/
-        token_price, volume_24h = await get_token_price_and_volume(
+        token_price, volume_24h, market_cap = await get_token_price_and_volume_and_mc(
             user_config['token_address'])
 
         # get token holders
@@ -78,13 +90,12 @@ async def handle_event(event, update: Update, user_config):
         buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
 
         # calc circulating_supply
-        circulating_supply = calc_circulating_supply(
-            total_supply, dead_wallet_balance)
+        #circulating_supply = calc_circulating_supply(total_supply, dead_wallet_balance)
 
-        market_cap = calc_market_cap(circulating_supply, token_price)
+        #market_cap = calc_market_cap(circulating_supply, token_price)
 
         message = create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price,
-                                 volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap)
+                                 volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap))
 
         print(message)
         print()
@@ -114,9 +125,9 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     contract = web3.eth.contract(
         address=local_user_config['pair_address'], abi=uniswap_pair_abi)
 
-    event = {"args": {"sender": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "to": "0x5607f96D4f0088833a10377F7f43eb19bc24B171", "amount0In": 0, "amount1In": 575000000000000000, "amount0Out": 7815812167829902108223067, "amount1Out": 0}, "event": "Swap", "logIndex": 283,
-             "transactionIndex": 143, "transactionHash": "0x9505889816f9432ed314d6942804e7b5da889b9fa87139210244da68ad3074de", "address": "0x4674D4a748f787e5Cb81e73290d1B96A1a788EFC", "blockHash": "0x7f93eecb33d5e17f3577fd0917e0b929eb58ed5589a3463a7ef4f68915812d59", "blockNumber": 16378312}
-    await handle_event(event, contract, update, local_user_config)
+    event = {"args": {"sender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "to": "0x8BE53f41ADF11aeD024de73272d2de9ac7BeC7fb", "amount0In": 0, "amount1In": 8000000000000000, "amount0Out": 86064975775894, "amount1Out": 0}, "event": "Swap", "logIndex": 164, "transactionIndex": 76,
+             "transactionHash": "0x29f656b080ed2d12db5a6dac786f77e749d46be37df39b9105b813349192d9cd", "address": "0xe116f47fbDA2F4DD04E37B47A459052022A0AccF", "blockHash": "0xcce6a848fad4d6b8a0ebee1cf2aea03536001202918fa11272859cfd3bed9d71", "blockNumber": 16547719}
+    await handle_event(event, update, local_user_config)
 
     # await update.effective_chat.send_message("[TX](https://etherscan.io/tx/" + "tx_hash" + ")\n", parse_mode="MarkdownV2")
 
@@ -182,7 +193,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # send the message
     message = ""
-    #message += "⚡ Net️work: Ethereum" + "\n"
+    # message += "⚡ Net️work: Ethereum" + "\n"
     message += f"Token name: {token_info['name']}\n"
     message += f"Token symbol: {token_info['symbol']}\n"
     message += "💰 Price: $" + str(token_info['price']) + "\n"
@@ -201,6 +212,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.effective_chat.send_message(message)
 
 
+# @auth(USER_ID)
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # read the users_configs.json file into the users_configs variable
@@ -242,13 +254,13 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(f'Buybot started.')
 
 
-async def buybotconfigif2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def buybotconfigvideo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # print(update.message)
 
     # get file id from the message
     video = update.message.video
-    # print(video)
+    print(update.message)
 
     # download the file
     file = await context.bot.get_file(video.file_id)
@@ -261,6 +273,15 @@ async def buybotconfigif2(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     print(file_name)
     # save the file
     await file.download_to_drive(file_name)
+
+
+async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+    # print(update.message)
+
+    # get file id from the message
+    gif = update.message.document
+    print(update.message)
 
 
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -389,6 +410,27 @@ async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE)
             return
 
 
+def check_gif():
+    print("check_gif")
+
+
+async def set_owner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    owner = update.effective_user.id
+
+    users_configs = read_json_file("users_configs.json")
+    user_config = {}
+
+    # check if the user already has a config
+
+    # update the emoji
+    user_config["owner"] = owner
+    users_configs.append(user_config)
+    await update.message.reply_text("Owner updated.")
+    # write the users_configs variable to the users_configs.json file
+    with open('users_configs.json', 'w') as outfile:
+        json.dump(users_configs, outfile)
+
+
 async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -405,6 +447,9 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
         return
 
     pair_address = await get_pair_addressV2(Web3.toChecksumAddress(args[0]))
+
+    token_info = get_token_info(
+        moralis_api_key, web3.toChecksumAddress(args[0]))
 
     # get chat id from the update
     chat_id = update.effective_chat.id
@@ -431,6 +476,7 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
             "user_id": update.effective_user.id,
             "token_address": web3.toChecksumAddress(args[0]),
             "pair_address": pair_address,
+            "decimals": int(token_info["decimals"]),
             "chat_id": chat_id,
             "emoji": "⚪️",
             "telegramurl": "https://t.me/",
@@ -442,9 +488,6 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
     # save the users_configs array to a json file
     with open('users_configs.json', 'w') as outfile:
         json.dump(users_configs, outfile)
-
-    token_info = get_token_info(
-        moralis_api_key, web3.toChecksumAddress(args[0]))
 
     message = "Selected token:\n"
     message = f"Token name: {token_info['name']}\n"
@@ -536,7 +579,11 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(CommandHandler("test", send_message))
-    app.add_handler(MessageHandler(filters.VIDEO, buybotconfigif2))
+    app.add_handler(CommandHandler("start", set_owner))
+    # app.add_handler(CommandHandler("gif", set_gif))
+    # app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
+    # create message handler for .gif files
+    # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
     # app.add_handler(CommandHandler("buybotconfigif", buybotconfigif))
 
     app.run_polling()

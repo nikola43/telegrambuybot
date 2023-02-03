@@ -1,13 +1,14 @@
 [
 	{
 		"user_id": 358896373,
-		"token_address": "0xdbFD10F8C32F96470eEEf40f2d1DcDa5dfE497Bc",
-		"pair_address": "0x116a3474379Bf29E4d88cC6C99636460CA2e5fB1",
+		"token_address": "0x8F9fA42d66e4Efa34aBa5Db487dCD1890717a05F",
+		"pair_address": "0xe116f47fbDA2F4DD04E37B47A459052022A0AccF",
+        "decimals": 9,
 		"chat_id": -885410874,
 		"emoji": "\u26aa\ufe0f",
-		"telegramurl": "https://t.me/Abs0luteSignals",
-		"twitterurl": "https://twitter.com/Solongwallet",
-		"websiteurl": "https://www.youtube.com/",
+		"telegramurl": "https://t.me/",
+		"twitterurl": "https://twitter.com/",
+		"websiteurl": "https://google.com/",
 		"gif": "boop.mp4"
 	}
 ]

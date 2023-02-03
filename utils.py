@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from moralis import evm_api
 from urllib.parse import urlparse
 
+
 def is_valid_url(url):
     try:
         result = urlparse(url)
@@ -13,18 +14,26 @@ def is_valid_url(url):
         return False
 
 
-def extract_event_data(event):
-    # tx_hash = event['transactionHash']
-    tx_hash = event['transactionHash'].hex()
+def extract_event_data(event, decimals):
+    tx_hash = event['transactionHash']
+    # tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
     amount0Out = event['args']['amount0Out']
     sender = event['args']['sender']
     address = event['address']
-
     amount1InEthUnits = Web3.fromWei(amount1In, 'ether')
-    amount0OutEthUnits = Web3.fromWei(amount0Out, 'ether')
+    amount0OutEthUnits = convert_wei_to_eth(amount0Out, decimals)
+
+    print("tx_hash: ", tx_hash)
+    print("to: ", to)
+    print("amount1In: ", amount1In)
+    print("amount0Out: ", amount0Out)
+    print("sender: ", sender)
+    print("address: ", address)
+    print("amount1InEthUnits: ", amount1InEthUnits)
+    print("amount0OutEthUnits: ", amount0OutEthUnits)
 
     return tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits
 
@@ -40,9 +49,12 @@ def get_token_info(api_key, token_address):
         params=params,
     )
 
+    print("result: ", result)
+
     return {
         "name": result[0]['name'],
         "symbol": result[0]['symbol'],
+        "decimals": result[0]['decimals'],
     }
 
 
@@ -59,9 +71,10 @@ def get_token_price(api_key, token_address):
     return result['usdPrice']
 
 
-async def get_token_price_and_volume(token_address: str):
+async def get_token_price_and_volume_and_mc(token_address: str):
     volume_24h = None
     token_price = None
+    market_cap = None
 
     response = requests.get(
         "https://api.dexscreener.com/latest/dex/tokens/" + token_address)
@@ -71,8 +84,9 @@ async def get_token_price_and_volume(token_address: str):
         if data['pairs']:
             volume_24h = data['pairs'][0]['volume']['h24']
             token_price = data['pairs'][0]['priceUsd']
+            market_cap = data['pairs'][0]['fdv']
 
-    return token_price, volume_24h
+    return token_price, volume_24h, market_cap
 
 
 async def get_token_holders_supply_name(token_address: str):
@@ -262,10 +276,10 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
     message += "💵 *$" + \
         str("{:,.8f}".format(float(token_price))) + "*\n"
 
-    if is_new_holder:
-        message += "✅ *New Holder!*\n"
-    else:
-        message += "❌ *Not New Holder!*\n"
+    # if is_new_holder:
+    #    message += "✅ *New Holder!*\n"
+    # else:
+    #    message += "❌ *Not New Holder!*\n"
 
     message += "📂 *[Address](https://etherscan.io/address/" + to + ")*" + \
         " | *[TX](https://etherscan.io/tx/" + tx_hash + ")*" + "\n"
@@ -295,3 +309,9 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
     # escape markdown characters
     message = escape_markdown(message)
     return message
+
+# function for convert wei to eth with decimals
+
+
+def convert_wei_to_eth(wei, decimals):
+    return float(wei) / 10 ** decimals
