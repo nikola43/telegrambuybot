@@ -1,9 +1,9 @@
 [
 	{
 		"user_id": 358896373,
-		"token_address": "0x8F9fA42d66e4Efa34aBa5Db487dCD1890717a05F",
-		"pair_address": "0xe116f47fbDA2F4DD04E37B47A459052022A0AccF",
-        "decimals": 9,
+		"token_address": "0xA735A3AF76CC30791C61c10d585833829d36CBe0",
+		"pair_address": "0xE471F93c2bE15B64e9Ec63BbF485446CB934E8C4",
+		"decimals": 9,
 		"chat_id": -885410874,
 		"emoji": "\u26aa\ufe0f",
 		"telegramurl": "https://t.me/",

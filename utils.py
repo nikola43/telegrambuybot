@@ -15,8 +15,8 @@ def is_valid_url(url):
 
 
 def extract_event_data(event, decimals):
-    tx_hash = event['transactionHash']
-    # tx_hash = event['transactionHash'].hex()
+    # tx_hash = event['transactionHash']
+    tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
