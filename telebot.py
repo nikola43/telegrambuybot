@@ -32,21 +32,29 @@ users_tasks = {}
 
 # init the chatbot
 # chatbot = Chatbot({
-#    "session_token": chatGPT_token
+#   "session_token": chatGPT_token
 # }, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
-# create a decorator called auth that receives USER_ID as an argument with wraps
-USER_ID = 358896373
+bot_chat_id = 358896373
+
+# function for check if user is admin or creator
 
 
-def auth(user_id):
+async def is_admin(update: Update) -> bool:
+    chat_member = await update.effective_chat.get_member(update.effective_user.id)
+    return chat_member.status in ("administrator", "creator")
+
+# decorator for check if user is admin or creator
+
+
+def admin_only():
     def decorator(func):
         @wraps(func)
-        async def wrapper(update, context):
-            if update.effective_user.id == user_id:
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            if await is_admin(update):
                 await func(update, context)
             else:
-                await update.message.reply_text("You are not authorized to use this bot")
+                await update.message.reply_text("You are not an admin.")
         return wrapper
     return decorator
 
@@ -90,9 +98,9 @@ async def handle_event(event, update: Update, user_config):
         buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
 
         # calc circulating_supply
-        #circulating_supply = calc_circulating_supply(total_supply, dead_wallet_balance)
+        # circulating_supply = calc_circulating_supply(total_supply, dead_wallet_balance)
 
-        #market_cap = calc_market_cap(circulating_supply, token_price)
+        # market_cap = calc_market_cap(circulating_supply, token_price)
 
         message = create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price,
                                  volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap))
@@ -216,7 +224,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.effective_chat.send_message(message)
 
 
-# @auth(USER_ID)
+@admin_only()
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # read the users_configs.json file into the users_configs variable
@@ -281,6 +289,7 @@ async def buybotconfigvideo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
         users_configs = read_json_file("users_configs.json")
 
+
 async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # print(update.message)
@@ -289,7 +298,7 @@ async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     gif = update.message.document
     print(update.message)
 
-
+@admin_only()
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     task = users_tasks[update.effective_user.id]
@@ -303,7 +312,7 @@ async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     task.cancel()
     await update.message.reply_text(f'Buybot stopped.')
 
-
+@admin_only()
 async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -331,7 +340,7 @@ async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT
                 json.dump(users_configs, outfile)
             return
 
-
+@admin_only()
 async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -359,7 +368,7 @@ async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_
                 json.dump(users_configs, outfile)
             return
 
-
+@admin_only()
 async def buybot_configwebsiteurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -387,7 +396,7 @@ async def buybot_configwebsiteurl(update: Update, context: ContextTypes.DEFAULT_
                 json.dump(users_configs, outfile)
             return
 
-
+@admin_only()
 async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -422,22 +431,41 @@ def check_gif():
 
 async def set_owner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     owner = update.effective_user.id
+    chat_id = update.effective_chat.id
 
     users_configs = read_json_file("users_configs.json")
-    user_config = {}
+    local_user_config = None
 
-    # check if the user already has a config
+    if local_user_config is None:
+        # append the user id and token address to users_configs array
+        users_configs.append({
+            "owner": owner,
+            "user_id": update.effective_user.id,
+            "token_address": "0x0000000000000000000000000000000000000000",
+            "pair_address": "0x0000000000000000000000000000000000000000",
+            "decimals": 18,
+            "chat_id": chat_id,
+            "emoji": "⚪️",
+            "telegramurl": "https://t.me/",
+            "twitterurl": "https://twitter.com/",
+            "websiteurl": "https://google.com/",
+            "gif": "boop.mp4"
+        })
 
-    # update the emoji
-    user_config["owner"] = owner
-    users_configs.append(user_config)
-    await update.message.reply_text("Owner updated.")
-    # write the users_configs variable to the users_configs.json file
     with open('users_configs.json', 'w') as outfile:
         json.dump(users_configs, outfile)
 
+    await update.message.reply_text("Bot owner set. Add the bot to your group.")
 
+
+# @auth(USER_ID)
+@admin_only()
 async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # get chat member and check if the user is an admin
+    chat_member = await update.effective_chat.get_member(update.effective_user.id)
+
+    print(chat_member.status)
+
     # extract the command arguments
     args = context.args
 
@@ -585,7 +613,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(CommandHandler("test", send_message))
-    app.add_handler(CommandHandler("start", set_owner))
     # app.add_handler(CommandHandler("gif", set_gif))
     # app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
     # create message handler for .gif files

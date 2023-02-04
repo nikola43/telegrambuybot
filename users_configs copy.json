@@ -1,0 +1,26 @@
+[
+	{
+		"user_id": 358896373,
+		"token_address": "0xA735A3AF76CC30791C61c10d585833829d36CBe0",
+		"pair_address": "0xE471F93c2bE15B64e9Ec63BbF485446CB934E8C4",
+		"decimals": 9,
+		"chat_id": -885410874,
+		"emoji": "\u26aa\ufe0f",
+		"telegramurl": "https://t.me/",
+		"twitterurl": "https://twitter.com/",
+		"websiteurl": "https://google.com/",
+		"gif": "boop.mp4"
+	},
+	{
+		"user_id": 1958585850,
+		"token_address": "0xA735A3AF76CC30791C61c10d585833829d36CBe0",
+		"pair_address": "0xE471F93c2bE15B64e9Ec63BbF485446CB934E8C4",
+		"decimals": 9,
+		"chat_id": -885410874,
+		"emoji": "\u26aa\ufe0f",
+		"telegramurl": "https://t.me/AltruismAI",
+		"twitterurl": "https://twitter.com/AltruismAI",
+		"websiteurl": "https://neuroni.ai/",
+		"gif": "boop.mp4"
+	}
+]
