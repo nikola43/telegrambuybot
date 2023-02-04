@@ -46,6 +46,16 @@ async def is_admin(update: Update) -> bool:
 
 # decorator for check if user is admin or creator
 
+def is_bot_chat():
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            if update.effective_chat.id != bot_chat_id:
+                await func(update, context)
+            else:
+                await update.message.reply_text("Default text")
+        return wrapper
+    return decorator
 
 def admin_only():
     def decorator(func):
@@ -224,6 +234,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.effective_chat.send_message(message)
 
 
+@is_bot_chat()
 @admin_only()
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
@@ -298,6 +309,7 @@ async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     gif = update.message.document
     print(update.message)
 
+@is_bot_chat()
 @admin_only()
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
@@ -312,6 +324,7 @@ async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     task.cancel()
     await update.message.reply_text(f'Buybot stopped.')
 
+@is_bot_chat()
 @admin_only()
 async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
@@ -340,6 +353,7 @@ async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT
                 json.dump(users_configs, outfile)
             return
 
+@is_bot_chat()
 @admin_only()
 async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
@@ -368,6 +382,7 @@ async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_
                 json.dump(users_configs, outfile)
             return
 
+@is_bot_chat()
 @admin_only()
 async def buybot_configwebsiteurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
@@ -396,6 +411,7 @@ async def buybot_configwebsiteurl(update: Update, context: ContextTypes.DEFAULT_
                 json.dump(users_configs, outfile)
             return
 
+@is_bot_chat()
 @admin_only()
 async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
@@ -459,6 +475,7 @@ async def set_owner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 # @auth(USER_ID)
+@is_bot_chat()
 @admin_only()
 async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # get chat member and check if the user is an admin
