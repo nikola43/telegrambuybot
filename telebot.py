@@ -10,17 +10,18 @@ from utils import extract_event_data, get_token_price_and_volume_and_mc, get_tok
 from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
 from functools import wraps
+from dotenv import load_dotenv
 
 # Replace YOUR_API_KEY with your OpenAI API key
-moralis_api_key = "LJ2liXqSHdL6XOad7XhWqTP30Wi0mIIqSf1RDnemTPXYwKFm5L3Ux9WeaxTFCpxB"
-etherscan_api_key = "UVGM9GGPHXP755SK9DKI3BED9EBA5RC16P"
-infura_api_key = "d39a866f4f6d49b9916f9269bf880110"
-chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..fnrqmB453UkwaCMP.uNB0I8iYfJMUaS_qkjdnFwIo4__rus1MuXuBweQhCppnwd_RkGupjF18bZAabV2Be1XmmA62siP0qHxXj1HK22282Uxo8hB8MQXmM39rX2THf4lt-iE0AuufVJxYcAgcmTPTVimNus0Sjb1PIDdJC33LPsAN_9_GqoICnB44YM40n1raJPyOA_dgz0hwdbTQGErlGxzrvQeA0ymC6eobfdeyrGHlAbAl6MAzB_t457SRBCbkWVwowQzQq0_ZixIAchNEExc9wP34-mIQO8AptXFbpS1L6KMPxI1k38ogUZBB1IPPLD8LHKxx2dwakPxDxhR0ly0tfyv7odHmMmHh498wg1jBN2u8006r-coy4OQiJiAHWfirjbPLgyCvSzGqTjwLx5qvMLwyOn_BYHRKP5ujFEM1QiJfAOzGKz-K8SyyVnmmFGpKddYu5fcw2MZl0HC-oSDWQCCgO279x5dlcgTb3DaQQwA7slOgYeG2Fu-KrLZmvYyFuzJzsGlFiklBvW_8VsYKJmrVafX529Dg7xhf3yPVUoyHt-z1-B76Ay2jyfhvC7l6gLBVrhfgZQvAzELRMwzRUzoDQ59S3xuTqDHEY-uQJRsbdzE2DrhJrHoasyjO6Z8VfRP7XGxOcm78gMKluB3p5YUqZDPVgW7T3hCRSgDGaxtffauXxFOQQZMjpdXHrLvxON93EO9CZbAVoEnbS6F7_gdF0ERPLg1YgGn4NzkxD0va2sVtJ5XuYY1Klvc1Ks7nMnYabiLxEaKYagiTcbMiKfGvLTWG4nDgQcI5-uO7YhTBnSJZ86brjepN0dLx6qzn8RMHDPIbfBBOMT4fy2Y0KAnwDD5UQajfcQHjLTg6bb2BOEJj8QVKLakPWBiZA_tD8Lb0cx7vaQGI5wKdyviSQ9bzkiSeqPXkl2HMXi7Hbbu93TphRvPGNgvn4De7e-5G8OElasjSc4MmPv5YPNSQyyG1844RCv5PZd1eyNQIKdDexN-aNLzeEY9-AnVrIic5aGdCVm8mCkKzO_wFoCxHwmYKgxTRdga4x3RTIgsifTp7x9gsGnM83a3Fbbtn6t-TZyKpwDSL2HjtlniEISAbC-IibPx5LT5ytmVqzW0NJTp9BibR8GMvLzDqNyOWY0UdlFbnldzOpzspWSEihQF4P6zo3Yvyo_LvjDS_Q61AUwrlCYBmngkQZZqn6WPFZ2S-HgknoLqGFEIYsUrcEAQUNMMZxpaKTZDP74DnGuCEKkuHzF8UdWj3k6W2x7vdOvLB7AbaJjiwAKkbiJ-AFhFgbl6gMfNVrE39VNF3KWjAv0yYUdgxVRqJ3CmqjNrsm8QVR4vEwWmkb58clGu8O6WVnRl9QF1mSsSjqP2WG5ZcZlE5pKjDJYsfHlXL_o4Hy1NHqZlucY9Q2AinPMgkLHLYrvnkKJPWsf8u6jLnfLw2BmHadqYKPcFuKotrQECUhmREhgueSXFGbnuWVdipvkPHYDFijlUL7rUem-df3F7mZ8EJqTZ1kSOfukFo9hT4987NQDbVLOBnD4nPLAXJN1M07rHo7kQhf_9MkclAGlvSIx0fuVpKbtGrOHPaKrjUGt4PskyeR-gO4QoHLXqVzTNJKS34Y55-JILQkduDJjmC_qlllqmBFTuq7d6xUDq6yHtuwUwJ2CmJvvKAnypqtiagkBVPfv8X0TQPiLvI1CIq_DY_l81Go7B_FipGog7OD08rbHsMGwXE8DdUpiZDlL1SIkrDlnea4Ttjlsrb13kWH3QN2SrOLU0Kn15A2IULiwachFLWhoFzHEYaNb47Yzx66s-c2UJVV28_YOE3325TBB-SYdAPxP6cx3wTjtW59-lnZz6fuNGJYDAgS4nNu444zl0cgW3VD__eTucEKozSGWUXJ3Tp95aM8ecIBJisMaWvCdHsQhTYhnRC2sSQVlCX-r7Z8wwthdPMt48XY1ChHhp9SmxKzA5aoIhh77CIw5WuBZnIQYjrlXp1hxFmFniokwppOcAa0GTDKS8GaK-AZ0UGjsjA_f7WpAWMvhe-MHCYifcktL_hXVOs57Qj3em254wkjaUJHsZLsklFlNVrr-YPI0Anm04ClEBdZHp6ZNOJ5GdJZ__eJfMdwJZfim32PWWvaKre4tAfnv1pAgPlTQdPDHhdqlGziaAwM6AZbIZMBy1ch-ISZ5MTGbZababuc5JhD_2FKPtA9M8J5q3SlpUONrcmpyUSlq7Lpp3rQiZWSg2MpGXp5j2jD5EqWMzexHYgB030EEILiAcRZMCQHoGE7odBO1GoQcloBGoruOLJhPZDwZoeyzu12QWbUr6WZTDzvjp1dWKUtySI_lkVBNE9H5vAid3mxIgm8VdXuiyJaZv05fy-Rsp9D4jqifPsqUuMESVAjv_vJhPb-Zf27u-vqx44wijek5iKqC27X2X9IExE_eb0euclzup2Uwk4wcCoFKc4pYjNJkwpRb_zOmzVNE7vTJQ-EHu3ucShCs9IKdv3K2_xVLuZPOjne7r3303QYJcbPPJKSDffwswdccijogX1zC-R8yyQqW0a2YQkhPciOf182rt7eJY-.3yiycry9vdmlFK3hWymB0Q"
-telegram_token = "5879284684:AAEAbG1GpcOTWoNMPjTjghW-oshef-KOSmM"
+moralis_api_key = None
+etherscan_api_key = None
+infura_api_key = None
+chatGPT_token = None
+telegram_token = None
 
 # add your blockchain connection information
-infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
-web3 = Web3(Web3.HTTPProvider(infura_url))
+infura_url = None
+web3 = None
 
 # add your uniswap router address
 router_addess = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
@@ -614,10 +615,27 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     await update.effective_chat.send_message(response['message'])
 
+def get_env_file_variables():
+    moralis_api_key = os.getenv('moralis_api_key')
+    etherscan_api_key = os.getenv('etherscan_api_key')
+    infura_api_key = os.getenv('infura_api_key')
+    chatGPT_token = os.getenv('chatGPT_token')
+    telegram_token = os.getenv('telegram_token')
+
+    return moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token
+    
 
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(telegram_token).build()
+    load_dotenv()
 
+    moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token = get_env_file_variables()
+    
+    # add your blockchain connection information
+    infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
+    web3 = Web3(Web3.HTTPProvider(infura_url))
+
+
+    app = ApplicationBuilder().token(telegram_token).build()
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
     app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
     app.add_handler(CommandHandler("price", call_get_price_bot))

@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from web3 import Web3
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -315,3 +316,6 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
 
 def convert_wei_to_eth(wei, decimals):
     return float(wei) / 10 ** decimals
+
+def read_env_file():
+    print("Reading .env file")
