@@ -617,8 +617,8 @@ if __name__ == "__main__":
     web3 = Web3(Web3.HTTPProvider(infura_url))
 
     app = ApplicationBuilder().token(telegram_token).build()
-    app.add_handler(CommandHandler("ai", ask_chat_gpt))
-    app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    #app.add_handler(CommandHandler("ai", ask_chat_gpt))
+    #app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
     app.add_handler(CommandHandler("price", call_get_price_bot))
     app.add_handler(CommandHandler("address", buybot_configaddress))
     app.add_handler(CommandHandler("emoji", buybot_configemoji))
