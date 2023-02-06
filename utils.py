@@ -2,9 +2,12 @@ import json
 import os
 import requests
 from web3 import Web3
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ContextTypes
 from moralis import evm_api
 from urllib.parse import urlparse
+from telegram import Update
+from functools import wraps
 
 
 def is_valid_url(url):
@@ -22,21 +25,21 @@ def extract_event_data(event, decimals):
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
     amount0Out = event['args']['amount0Out']
-    sender = event['args']['sender']
+    #sender = event['args']['sender']
     address = event['address']
     amount1InEthUnits = Web3.fromWei(amount1In, 'ether')
     amount0OutEthUnits = convert_wei_to_eth(amount0Out, decimals)
 
     print("tx_hash: ", tx_hash)
     print("to: ", to)
-    print("amount1In: ", amount1In)
+    #print("amount1In: ", amount1In)
     print("amount0Out: ", amount0Out)
-    print("sender: ", sender)
+    #print("sender: ", sender)
     print("address: ", address)
     print("amount1InEthUnits: ", amount1InEthUnits)
     print("amount0OutEthUnits: ", amount0OutEthUnits)
 
-    return tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits
+    return tx_hash, to, amount0Out, address, amount1InEthUnits, amount0OutEthUnits
 
 
 def get_token_info(api_key, token_address):
@@ -317,5 +320,54 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
 def convert_wei_to_eth(wei, decimals):
     return float(wei) / 10 ** decimals
 
-def read_env_file():
-    print("Reading .env file")
+
+def check_user_has_config():
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            if check_user(update.effective_user.id):
+                await func(update, context)
+            else:
+                await update.message.reply_text("You don't have a config yet. Please use /address to set your token address.")
+        return wrapper
+    return decorator
+
+
+def check_user(user_id) -> bool:
+    users_configs = read_json_file("users_configs.json")
+
+    # loop through the users_configs and find the config for the current user
+    for user_config in users_configs:
+        if user_config['user_id'] == user_id:
+            return True
+
+    return False
+
+
+async def is_admin(update: Update) -> bool:
+    chat_member = await update.effective_chat.get_member(update.effective_user.id)
+    return chat_member.status in ("administrator", "creator")
+
+
+def is_bot_chat(bot_chat_id):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            if update.effective_chat.id != bot_chat_id:
+                await func(update, context)
+            else:
+                await update.message.reply_text("You can't use this command in the bot chat. Please add the bot to your group and use the command there.")
+        return wrapper
+    return decorator
+
+
+def admin_only():
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            if await is_admin(update):
+                await func(update, context)
+            else:
+                await update.message.reply_text("You are not an admin.")
+        return wrapper
+    return decorator

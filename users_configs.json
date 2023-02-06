@@ -1,28 +1,3 @@
 [
-	{
-		"owner": 358896373,
-		"user_id": 358896373,
-		"token_address": "0x0000000000000000000000000000000000000000",
-		"pair_address": "0x0000000000000000000000000000000000000000",
-		"decimals": 18,
-		"chat_id": 0,
-		"emoji": "\u26aa\ufe0f",
-		"telegramurl": "https://t.me/",
-		"twitterurl": "https://twitter.com/",
-		"websiteurl": "https://google.com/",
-		"gif": "boop.mp4"
-	},
-	{
-		"owner": 358896373,
-		"user_id": 358896373,
-		"token_address": "0x0000000000000000000000000000000000000000",
-		"pair_address": "0x0000000000000000000000000000000000000000",
-		"decimals": 18,
-		"chat_id": 358896373,
-		"emoji": "\u26aa\ufe0f",
-		"telegramurl": "https://t.me/",
-		"twitterurl": "https://twitter.com/",
-		"websiteurl": "https://google.com/",
-		"gif": "boop.mp4"
-	}
+
 ]
