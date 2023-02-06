@@ -1,7 +1,7 @@
 
 import os
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters, CallbackQueryHandler
 import json
 from web3 import Web3
 import asyncio
@@ -40,8 +40,6 @@ users_tasks = {}
 # }, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
 
-
-
 async def handle_event(event, update: Update, user_config):
     print(Web3.toJSON(event))
 
@@ -78,13 +76,20 @@ async def handle_event(event, update: Update, user_config):
         message = create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price,
                                  volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap))
 
+        keyboard = [
+            [
+                InlineKeyboardButton("▫️ advertiser ▫️", callback_data="1")
+            ],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
         print(message)
         print()
 
         # get video file input from local file system
         # send video to chat id
         video = open(user_config['gif'], 'rb')
-        await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2")
+        await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2", reply_markup=reply_markup)
 
 
 async def setgif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -105,13 +110,10 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             local_user_config['pair_address'] = web3.toChecksumAddress(
                 local_user_config['pair_address'])
 
-    print(local_user_config)
-
     event = {"args": {"sender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "to": "0x8BE53f41ADF11aeD024de73272d2de9ac7BeC7fb", "amount0In": 0, "amount1In": 8000000000000000, "amount0Out": 86064975775894, "amount1Out": 0}, "event": "Swap", "logIndex": 164, "transactionIndex": 76,
              "transactionHash": "0x29f656b080ed2d12db5a6dac786f77e749d46be37df39b9105b813349192d9cd", "address": "0xe116f47fbDA2F4DD04E37B47A459052022A0AccF", "blockHash": "0xcce6a848fad4d6b8a0ebee1cf2aea03536001202918fa11272859cfd3bed9d71", "blockNumber": 16547719}
     await handle_event(event, update, local_user_config)
 
-    # await update.effective_chat.send_message("[TX](https://etherscan.io/tx/" + "tx_hash" + ")\n", parse_mode="MarkdownV2")
 
 
 async def run_buybot(contract, update: Update, user_config):
@@ -240,6 +242,7 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     await update.message.reply_text(f'Buybot started.')
 
+
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
@@ -275,6 +278,7 @@ async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     gif = update.message.document
     print(update.message)
 
+
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
@@ -290,6 +294,7 @@ async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     # cancel the run_buybot_task
     task.cancel()
     await update.message.reply_text(f'Buybot stopped.')
+
 
 @is_bot_chat(bot_chat_id)
 @admin_only()
@@ -324,6 +329,37 @@ async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
+async def advertiser_fn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        # extract the command arguments
+    args = context.args
+
+    # check if the user sent a parameter
+    if not args:
+        await update.message.reply_text("You didn't specify advertiser url.")
+        return
+
+    # check if is valid url
+    if not is_valid_url(args[0]):
+        await update.message.reply_text("The url is not valid.")
+        return
+
+    users_configs = read_json_file("users_configs.json")
+
+    # check if the user already has a config
+    for user_config in users_configs:
+        if user_config["user_id"] == update.effective_user.id:
+            # update the emoji
+            user_config["advertiser"] = args[0]
+            await update.message.reply_text("Telegram url updated.")
+            # write the users_configs variable to the users_configs.json file
+            with open('users_configs.json', 'w') as outfile:
+                json.dump(users_configs, outfile)
+            return
+
+
+@is_bot_chat(bot_chat_id)
+@admin_only()
+@check_user_has_config()
 async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # extract the command arguments
     args = context.args
@@ -350,6 +386,7 @@ async def buybot_configtwitterurl(update: Update, context: ContextTypes.DEFAULT_
             with open('users_configs.json', 'w') as outfile:
                 json.dump(users_configs, outfile)
             return
+
 
 @is_bot_chat(bot_chat_id)
 @admin_only()
@@ -381,6 +418,7 @@ async def buybot_configwebsiteurl(update: Update, context: ContextTypes.DEFAULT_
                 json.dump(users_configs, outfile)
             return
 
+
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
@@ -410,6 +448,7 @@ async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE)
             with open('users_configs.json', 'w') as outfile:
                 json.dump(users_configs, outfile)
             return
+
 
 @is_bot_chat(bot_chat_id)
 @admin_only()
@@ -463,6 +502,7 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
             "chat_id": chat_id,
             "emoji": "⚪️",
             "telegramurl": "https://t.me/",
+            "advertiser": "https://google.com/",
             "twitterurl": "https://twitter.com/",
             "websiteurl": "https://google.com/",
             "gif": "video.mp4"
@@ -546,6 +586,7 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     await update.effective_chat.send_message(response['message'])
 
+
 def get_env_file_variables():
     moralis_api_key = os.getenv('moralis_api_key')
     etherscan_api_key = os.getenv('etherscan_api_key')
@@ -554,13 +595,23 @@ def get_env_file_variables():
     telegram_token = os.getenv('telegram_token')
 
     return moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token
-    
+
+
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Parses the CallbackQuery and updates the message text."""
+    query = update.callback_query
+
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    await query.answer()
+
+    await update.effective_chat.send_message(text=f"Selected option: {query.data}")
 
 if __name__ == "__main__":
     load_dotenv()
 
     moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token = get_env_file_variables()
-    
+
     # add your blockchain connection information
     infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
     web3 = Web3(Web3.HTTPProvider(infura_url))
@@ -574,16 +625,16 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("website", buybot_configwebsiteurl))
     app.add_handler(CommandHandler("telegram", buybot_configtelegramurl))
     app.add_handler(CommandHandler("twitter", buybot_configtwitterurl))
+    app.add_handler(CommandHandler("advertiser", advertiser_fn))
     app.add_handler(CommandHandler("startbuybot", start_buybot))
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
-    #app.add_handler(CommandHandler("test", send_message))
-    # app.add_handler(CommandHandler("gif", set_gif))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
+    app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(CommandHandler("test", send_message))
+    # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
     # app.add_handler(CommandHandler("buybotconfigif", buybotconfigif))
 
     app.run_polling()
-
-

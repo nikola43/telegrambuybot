@@ -19,8 +19,8 @@ def is_valid_url(url):
 
 
 def extract_event_data(event, decimals):
-    # tx_hash = event['transactionHash']
-    tx_hash = event['transactionHash'].hex()
+    tx_hash = event['transactionHash']
+    #tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
@@ -230,9 +230,7 @@ def escape_markdown(message):
 def create_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("▫️ UR AD HERE ▫️", callback_data="1"),
-            InlineKeyboardButton(
-                "▫️ GET BOOP ▫️", callback_data="2"),
+            InlineKeyboardButton("▫️ advertiser ▫️", callback_data="1")
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
