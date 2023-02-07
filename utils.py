@@ -13,19 +13,19 @@ from functools import wraps
 def is_valid_url(url):
     try:
         result = urlparse(url)
-        return all([result.scheme, result.netloc, result.path])
+        return all([result.scheme, result.netloc])
     except ValueError:
         return False
 
 
 def extract_event_data(event, decimals):
-    #tx_hash = event['transactionHash']
+    # tx_hash = event['transactionHash']
     tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
     amount0Out = event['args']['amount0Out']
-    #print("amount0Out: ", amount0Out)
+    # print("amount0Out: ", amount0Out)
     sender = event['args']['sender']
     address = event['address']
     amount1InEthUnits = Web3.fromWei(amount1In, 'ether')

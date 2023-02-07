@@ -273,21 +273,22 @@ async def buybotconfigvideo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
         users_configs = read_json_file("users_configs.json")
 
-
-async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
-    # print(update.message)
-
-    # get file id from the message
-    gif = update.message.document
-    print(update.message)
+        # check if the user already has a config
+        for user_config in users_configs:
+            if user_config["user_id"] == update.effective_user.id:
+                # update the emoji
+                user_config["gif"] = file_name
+                await update.message.reply_text("Gif updated.")
+                # write the users_configs variable to the users_configs.json file
+                with open('users_configs.json', 'w') as outfile:
+                    json.dump(users_configs, outfile)
+                return
 
 
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
 
     # check if the user has a task running
     if update.effective_user.id not in users_tasks:
@@ -332,7 +333,6 @@ async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT
     # check if the user already has a config
     for user_config in users_configs:
         if user_config["user_id"] == update.effective_user.id:
-            # update the emoji
             user_config["telegramurl"] = args[0]
             await update.message.reply_text("Telegram url updated.")
             # write the users_configs variable to the users_configs.json file
@@ -625,12 +625,10 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     link = "https://t.me/+NxL2xoRkFIY1MTU0"
 
     # create markdown link
-    markdown_link += "*[Group]("+link + ")*"
+    markdown_link = "[Group]("+link + ")"
 
     # await update.effective_chat.send_message(text=f"Selected option: {query.data}")
     await update.effective_chat.send_message(markdown_link, parse_mode="MarkdownV2")
-
-    # open chat with the link when user click on the link
 
 
 if __name__ == "__main__":
