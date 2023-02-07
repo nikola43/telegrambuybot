@@ -25,21 +25,22 @@ def extract_event_data(event, decimals):
     # tx_from = event['args']['from']
     amount1In = event['args']['amount1In']
     amount0Out = event['args']['amount0Out']
-    #sender = event['args']['sender']
+    #print("amount0Out: ", amount0Out)
+    sender = event['args']['sender']
     address = event['address']
     amount1InEthUnits = Web3.fromWei(amount1In, 'ether')
     amount0OutEthUnits = convert_wei_to_eth(amount0Out, decimals)
 
     print("tx_hash: ", tx_hash)
     print("to: ", to)
-    #print("amount1In: ", amount1In)
+    print("amount1In: ", amount1In)
     print("amount0Out: ", amount0Out)
-    #print("sender: ", sender)
+    print("sender: ", sender)
     print("address: ", address)
     print("amount1InEthUnits: ", amount1InEthUnits)
     print("amount0OutEthUnits: ", amount0OutEthUnits)
 
-    return tx_hash, to, amount0Out, address, amount1InEthUnits, amount0OutEthUnits
+    return tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits
 
 
 def get_token_info(api_key, token_address):
@@ -316,7 +317,7 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
 
 
 def convert_wei_to_eth(wei, decimals):
-    return float(wei) / 10 ** decimals
+    return int(wei) / 10 ** decimals
 
 
 def check_user_has_config():

@@ -44,7 +44,7 @@ async def handle_event(event, update: Update, user_config):
     print(Web3.toJSON(event))
 
     # extract event data
-    tx_hash, to, amount0Out, address, amount1InEthUnits, amount0OutEthUnits = extract_event_data(
+    tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits = extract_event_data(
         event, user_config['decimals'])
 
     # check if to address is the router address
@@ -110,10 +110,9 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             local_user_config['pair_address'] = web3.toChecksumAddress(
                 local_user_config['pair_address'])
 
-    event = {"args": {"sender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "to": "0x8BE53f41ADF11aeD024de73272d2de9ac7BeC7fb", "amount0In": 0, "amount1In": 8000000000000000, "amount0Out": 86064975775894, "amount1Out": 0}, "event": "Swap", "logIndex": 164, "transactionIndex": 76,
-             "transactionHash": "0x29f656b080ed2d12db5a6dac786f77e749d46be37df39b9105b813349192d9cd", "address": "0xe116f47fbDA2F4DD04E37B47A459052022A0AccF", "blockHash": "0xcce6a848fad4d6b8a0ebee1cf2aea03536001202918fa11272859cfd3bed9d71", "blockNumber": 16547719}
+    event = {"args": {"sender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "to": "0xCc33Db5fEc8cb1393adD7318Ca99cb916547E1B5", "amount0In": 0, "amount1In": 753066405440747595, "amount0Out": 7147773969820848, "amount1Out": 0}, "event": "Swap", "logIndex": 42,
+             "transactionIndex": 7, "transactionHash": "0x59eb920fc08c2cab52a4258be864e4989513f9be8bebf325187c12277fa385eb", "address": "0x5C9f4Eb96D4c111B5e667c0F0B63922CF91b8796", "blockHash": "0x6155bb1592b514ea1eda41053b699dd40fcde527cc919817e9a9951fa4641ed4", "blockNumber": 16576283}
     await handle_event(event, update, local_user_config)
-
 
 
 async def run_buybot(contract, update: Update, user_config):
@@ -236,6 +235,11 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     print("local_user_config: ", local_user_config)
 
+    # check if bot is already running
+    if update.effective_user.id in users_tasks:
+        await update.message.reply_text(f'Buybot is already running.')
+        return
+
     # run the run_buybot function on a new thread
     users_tasks[update.effective_user.id] = asyncio.create_task(
         run_buybot(contract, update, local_user_config))
@@ -284,6 +288,12 @@ async def buybotconfiggif(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 @check_user_has_config()
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
+
+    # check if the user has a task running
+    if update.effective_user.id not in users_tasks:
+        await update.message.reply_text(f'Buybot is not running.')
+        return
+
     task = users_tasks[update.effective_user.id]
 
     # check if the run_buybot_task is running
@@ -293,6 +303,10 @@ async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     # cancel the run_buybot_task
     task.cancel()
+
+    # delete the task from the users_tasks dictionary
+    del users_tasks[update.effective_user.id]
+
     await update.message.reply_text(f'Buybot stopped.')
 
 
@@ -326,11 +340,12 @@ async def buybot_configtelegramurl(update: Update, context: ContextTypes.DEFAULT
                 json.dump(users_configs, outfile)
             return
 
+
 @is_bot_chat(bot_chat_id)
 @admin_only()
 @check_user_has_config()
 async def advertiser_fn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        # extract the command arguments
+    # extract the command arguments
     args = context.args
 
     # check if the user sent a parameter
@@ -487,10 +502,11 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
                 args[0])
             local_user_config["pair_address"] = pair_address
             local_user_config["chat_id"] = chat_id
-
+            local_user_config["decimals"] = int(token_info["decimals"])
             # replace the user config in the users_configs array
             users_configs[users_configs.index(user_config)] = local_user_config
             await update.message.reply_text("Token address updated.")
+            break
 
     if local_user_config is None:
         # append the user id and token address to users_configs array
@@ -605,7 +621,17 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     await query.answer()
 
-    await update.effective_chat.send_message(text=f"Selected option: {query.data}")
+    # link
+    link = "https://t.me/+NxL2xoRkFIY1MTU0"
+
+    # create markdown link
+    markdown_link += "*[Group]("+link + ")*"
+
+    # await update.effective_chat.send_message(text=f"Selected option: {query.data}")
+    await update.effective_chat.send_message(markdown_link, parse_mode="MarkdownV2")
+
+    # open chat with the link when user click on the link
+
 
 if __name__ == "__main__":
     load_dotenv()
@@ -617,8 +643,8 @@ if __name__ == "__main__":
     web3 = Web3(Web3.HTTPProvider(infura_url))
 
     app = ApplicationBuilder().token(telegram_token).build()
-    #app.add_handler(CommandHandler("ai", ask_chat_gpt))
-    #app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    # app.add_handler(CommandHandler("ai", ask_chat_gpt))
+    # app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
     app.add_handler(CommandHandler("price", call_get_price_bot))
     app.add_handler(CommandHandler("address", buybot_configaddress))
     app.add_handler(CommandHandler("emoji", buybot_configemoji))
