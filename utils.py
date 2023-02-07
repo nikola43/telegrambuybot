@@ -19,17 +19,21 @@ def is_valid_url(url):
 
 
 def extract_event_data(event, decimals):
-    # tx_hash = event['transactionHash']
+    #tx_hash = event['transactionHash']
     tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
+    amount0In = event['args']['amount0In']
     amount1In = event['args']['amount1In']
     amount0Out = event['args']['amount0Out']
+    amount1Out = event['args']['amount1Out']
     # print("amount0Out: ", amount0Out)
     sender = event['args']['sender']
     address = event['address']
+    amount0InEthUnits = Web3.fromWei(amount0In, 'ether')
     amount1InEthUnits = Web3.fromWei(amount1In, 'ether')
     amount0OutEthUnits = convert_wei_to_eth(amount0Out, decimals)
+    amount1OutEthUnits = convert_wei_to_eth(amount1Out, decimals)
 
     print("tx_hash: ", tx_hash)
     print("to: ", to)
@@ -37,10 +41,12 @@ def extract_event_data(event, decimals):
     print("amount0Out: ", amount0Out)
     print("sender: ", sender)
     print("address: ", address)
+    print("amount0InEthUnits: ", amount0InEthUnits)
     print("amount1InEthUnits: ", amount1InEthUnits)
     print("amount0OutEthUnits: ", amount0OutEthUnits)
+    print("amount1OutEthUnits: ", amount1OutEthUnits)
 
-    return tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits
+    return tx_hash, to, amount1In, amount0Out, sender, address, amount0InEthUnits, amount1InEthUnits, amount0OutEthUnits, amount1OutEthUnits
 
 
 def get_token_info(api_key, token_address):
@@ -263,14 +269,15 @@ def read_json_file(file_name):
 
 
 def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap):
-    emoji_text = create_emoji_text(amount1InEthUnits, user_config['emoji'])
+    #emoji_text = create_emoji_text(amount1InEthUnits, user_config['emoji'])
+    emoji_text = "1"
 
     message = ""
 
     message += "*" + token_name + " Buy!*\n"
     message += emoji_text + "\n\n"
-    message += "💠  *" + str(float("{:,.2f}".format(float(amount1InEthUnits)))) + " ETH $" + str(
-        "{:,.0f}".format(float(token_price) * float(amount0OutEthUnits))) + "*\n"
+    message += "💠  *" + "{:,.4f}".format(amount1InEthUnits) + " ETH $" + str(
+        "{:,.8f}".format(float(token_price) * amount0OutEthUnits)) + "*\n"
 
     message += "🧩  *" + \
         str("{:,.0f}".format(float(amount0OutEthUnits))) + \

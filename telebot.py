@@ -6,7 +6,7 @@ import json
 from web3 import Web3
 import asyncio
 import requests
-from utils import admin_only, check_user_has_config, extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, calc_circulating_supply, calc_market_cap, create_emoji_text, create_message, create_keyboard, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
+from utils import admin_only, check_user_has_config, extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
 from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
 from functools import wraps
@@ -44,12 +44,19 @@ async def handle_event(event, update: Update, user_config):
     print(Web3.toJSON(event))
 
     # extract event data
-    tx_hash, to, amount1In, amount0Out, sender, address, amount1InEthUnits, amount0OutEthUnits = extract_event_data(
+    tx_hash, to, amount1In, amount0Out, sender, address, amount0InEthUnits, amount1InEthUnits, amount0OutEthUnits, amount1OutEthUnits = extract_event_data(
         event, user_config['decimals'])
 
+    
+
     # check if to address is the router address
-    is_buy_tx = to != routerV3_addess and to != routerV2_addess and address == user_config[
-        'pair_address'] and amount1InEthUnits > 0.0 and amount0OutEthUnits > 0.0
+    # is_buy_tx = to != routerV3_addess and to != routerV2_addess and address == user_config['pair_address'] and amount1InEthUnits > 0.0 and amount0OutEthUnits > 0.0
+
+    is_valid_amounts = amount0InEthUnits > 0.0 and amount1InEthUnits == 0.0 and amount0OutEthUnits == 0.0 and amount1OutEthUnits > 0.0
+    is_valid_addresses = to != routerV3_addess and to != routerV2_addess and address == user_config[
+        'pair_address']
+
+    is_buy_tx = is_valid_addresses and is_valid_amounts
 
     if is_buy_tx:
         print("New Buy!")
@@ -110,8 +117,8 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             local_user_config['pair_address'] = web3.toChecksumAddress(
                 local_user_config['pair_address'])
 
-    event = {"args": {"sender": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "to": "0xCc33Db5fEc8cb1393adD7318Ca99cb916547E1B5", "amount0In": 0, "amount1In": 753066405440747595, "amount0Out": 7147773969820848, "amount1Out": 0}, "event": "Swap", "logIndex": 42,
-             "transactionIndex": 7, "transactionHash": "0x59eb920fc08c2cab52a4258be864e4989513f9be8bebf325187c12277fa385eb", "address": "0x5C9f4Eb96D4c111B5e667c0F0B63922CF91b8796", "blockHash": "0x6155bb1592b514ea1eda41053b699dd40fcde527cc919817e9a9951fa4641ed4", "blockNumber": 16576283}
+    event = {"args": {"sender": "0x006200FB630000bB009B0083aE13fada00852A89", "to": "0x006200FB630000bB009B0083aE13fada00852A89", "amount0In": 0, "amount1In": 4644197718542142930944, "amount0Out": 1264390494285700000, "amount1Out": 0}, "event": "Swap", "logIndex": 41,
+             "transactionIndex": 4, "transactionHash": "0x447356037ad77e0427f10b788e4f0e8e3941fcf0da323188ed4b34a59b53cbac", "address": "0x80a0102a1E601C55FD3f136128bB2D222A879ff3", "blockHash": "0xb63c717112b5056d6cfc3c9de8fe9e9adbac16f3537099f5226a368a3ef5cf69", "blockNumber": 16577389}
     await handle_event(event, update, local_user_config)
 
 
@@ -121,7 +128,7 @@ async def run_buybot(contract, update: Update, user_config):
     while True:
         for Swap in event_filter.get_new_entries():
             await handle_event(Swap, update, user_config)
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
 
 
 async def buybot_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
