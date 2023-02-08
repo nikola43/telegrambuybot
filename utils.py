@@ -19,7 +19,7 @@ def is_valid_url(url):
 
 
 def extract_event_data(event, decimals):
-    #tx_hash = event['transactionHash']
+    # tx_hash = event['transactionHash']
     tx_hash = event['transactionHash'].hex()
     to = event['args']['to']
     # tx_from = event['args']['from']
@@ -268,9 +268,9 @@ def read_json_file(file_name):
         return json.load(f)
 
 
-def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, eth_usd, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap):
-    #emoji_text = create_emoji_text(amount1InEthUnits, user_config['emoji'])
-    emoji_text = "1"
+def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, eth_usd, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap, price_impact):
+    emoji_text = create_emoji_text(amount1InEthUnits, user_config['emoji'])
+    # emoji_text = "1"
 
     message = ""
 
@@ -288,8 +288,8 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
 
     if is_new_holder:
         message += "✅ *New Holder!*\n"
-    # else:
-    #    message += "❌ *Not New Holder!*\n"
+    else:
+        message += "❌ *Not New Holder!*\n"
 
     message += "📂 *[Address](https://etherscan.io/address/" + to + ")*" + \
         " | *[TX](https://etherscan.io/tx/" + tx_hash + ")*" + "\n"
@@ -298,6 +298,9 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
 
     message += "🔘 *Market Cap $" + \
         str("{:,.0f}".format(float(market_cap))) + "*\n"
+
+    message += "📈 *Price Impact " + \
+        str("{:,.2f}".format(float(price_impact))) + "%*\n"
 
     message += "⭐️ *24h Volume $" + \
         str("{:,.0f}".format(float(volume_24h))) + "*\n"
@@ -378,7 +381,36 @@ def admin_only():
         return wrapper
     return decorator
 
+
 def get_eth_value_usd(amount):
-    r = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
+    r = requests.get(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
     eth_price = r.json()['ethereum']['usd']
     return float(eth_price) * float(amount)
+
+
+def calculate_price_impact(pair_a_reserve, pair_b_reserve, tx_amount1In):
+    constant_product = pair_a_reserve * pair_b_reserve
+    print("Constant product: ", constant_product)
+
+    pair_a_per_pair_b_price = pair_a_reserve / pair_b_reserve
+    print("Pair A per pair B price: ", pair_a_per_pair_b_price)
+
+    # calculate price impact based on the constant product formula
+    pair_a_reserve_after_swap = pair_a_reserve + tx_amount1In
+    print("Pair A reserve after swap: ", pair_a_reserve_after_swap)
+
+    pair_b_reserve_after_swap = constant_product / pair_a_reserve_after_swap
+    print("Pair B reserve after swap: ", pair_b_reserve_after_swap)
+
+    pair_b_received = pair_b_reserve - pair_b_reserve_after_swap
+    print("Pair B received: ", pair_b_received)
+
+    pair_b_price_paid_per_pair_a = pair_a_reserve / pair_b_reserve_after_swap
+    print("Pair B price paid per pair A: ", pair_b_price_paid_per_pair_a)
+
+    price_impact = (1 - (pair_a_per_pair_b_price / pair_b_price_paid_per_pair_a)) / 10
+    #price_impact = price_impact * 100
+
+    print("Price impact: ", price_impact, "%")
+    return price_impact
