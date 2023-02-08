@@ -6,7 +6,7 @@ import json
 from web3 import Web3
 import asyncio
 import requests
-from utils import admin_only, check_user_has_config, convert_wei_to_eth, extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
+from utils import admin_only, check_user_has_config, convert_wei_to_eth, extract_event_data, get_eth_value_usd, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
 from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
 from functools import wraps
@@ -42,6 +42,7 @@ users_tasks = {}
 # }, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
 recent_txs = []
+
 
 async def handle_event(contract, event, update: Update, user_config):
     print(Web3.toJSON(event))
@@ -148,7 +149,9 @@ async def handle_event(contract, event, update: Update, user_config):
                     token_amountEth = convert_wei_to_eth(
                         token_amount, user_config['decimals'])
 
-                    message = create_message(user_config, tx_hash, from_address, weth_amountEth, token_amountEth, token_price,
+                    eth_usd = get_eth_value_usd(weth_amountEth)
+
+                    message = create_message(user_config, tx_hash, from_address, weth_amountEth, token_amountEth, eth_usd, token_price,
                                              volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap))
 
                     keyboard = [
@@ -545,6 +548,10 @@ async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE)
 @is_bot_chat(bot_chat_id)
 @admin_only()
 async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+    if update.effective_user.id in users_tasks:
+        await update.message.reply_text(f'Buybot is running, stop it for change the address.')
+        return
 
     # extract the command arguments
     args = context.args

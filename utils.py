@@ -268,7 +268,7 @@ def read_json_file(file_name):
         return json.load(f)
 
 
-def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap):
+def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUnits, eth_usd, token_price, volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, market_cap):
     #emoji_text = create_emoji_text(amount1InEthUnits, user_config['emoji'])
     emoji_text = "1"
 
@@ -277,7 +277,7 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
     message += "*" + token_name + " Buy!*\n"
     message += emoji_text + "\n\n"
     message += "💠  *" + "{:,.4f}".format(amount1InEthUnits) + " ETH $" + str(
-        "{:,.8f}".format(float(token_price) * amount0OutEthUnits)) + "*\n"
+        "{:,.8f}".format(eth_usd)) + "*\n"
 
     message += "🧩  *" + \
         str("{:,.0f}".format(float(amount0OutEthUnits))) + \
@@ -286,8 +286,8 @@ def create_message(user_config, tx_hash, to, amount1InEthUnits, amount0OutEthUni
     message += "💵 *$" + \
         str("{:,.8f}".format(float(token_price))) + "*\n"
 
-    # if is_new_holder:
-    #    message += "✅ *New Holder!*\n"
+    if is_new_holder:
+        message += "✅ *New Holder!*\n"
     # else:
     #    message += "❌ *Not New Holder!*\n"
 
@@ -377,3 +377,8 @@ def admin_only():
                 await update.message.reply_text("You are not an admin.")
         return wrapper
     return decorator
+
+def get_eth_value_usd(amount):
+    r = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
+    eth_price = r.json()['ethereum']['usd']
+    return float(eth_price) * float(amount)
