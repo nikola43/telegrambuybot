@@ -6,7 +6,7 @@ import json
 from web3 import Web3
 import asyncio
 import requests
-from utils import admin_only, check_user_has_config, extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
+from utils import admin_only, check_user_has_config, convert_wei_to_eth, extract_event_data, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
 from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
 from functools import wraps
@@ -41,18 +41,22 @@ users_tasks = {}
 #   "session_token": chatGPT_token
 # }, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
+recent_txs = []
 
 async def handle_event(contract, event, update: Update, user_config):
     print(Web3.toJSON(event))
     print("")
 
     tx_hash = event['transactionHash'].hex()
+    # from_address = event['args']['from']
 
     # get the transaction
     # tx = web3.eth.getTransaction(tx_hash)
 
     # get the transaction receipt
     tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+    # get from address from tx_receipt
+    from_address = Web3.toChecksumAddress(tx_receipt['from'])
 
     # print(tx_receipt)
 
@@ -73,16 +77,13 @@ async def handle_event(contract, event, update: Update, user_config):
             if log['topics'][0] == tx_fn_hash:
                 # get the address of the token
                 token_address = log['address']
-                print("token_address: ", token_address)
 
                 # get the address of the sender
                 sender_address = log['topics'][1].hex()
-                print("sender_address: ", sender_address)
                 decoded_sender_address = abi.decode(
                     ['address'], bytes.fromhex(sender_address[2:]))
                 sender_address = Web3.toChecksumAddress(
                     decoded_sender_address[0])
-                print("decoded_sender_address: ", sender_address)
 
                 # get the address of the receiver
                 receiver_address = log['topics'][2].hex()
@@ -90,15 +91,9 @@ async def handle_event(contract, event, update: Update, user_config):
                     ['address'], bytes.fromhex(receiver_address[2:]))
                 receiver_address = Web3.toChecksumAddress(
                     decoded_receiver_address[0])
-                print("receiver_address: ", receiver_address)
-
-                # get tx data
-                tx_data = log['data']
-                print("tx_data: ", tx_data)
 
                 value = int.from_bytes(bytes.fromhex(
                     log["data"][2:66]), "big", signed=False)
-                # print("value: ", value)
 
                 if sender_address == user_config['pair_address'] and token_address == user_config['token_address']:
                     token_amount = value
@@ -106,18 +101,71 @@ async def handle_event(contract, event, update: Update, user_config):
                 if receiver_address == user_config['pair_address']:
                     weth_amount = value
 
-                is_buy = sender_address == user_config['pair_address']
+                is_buy = sender_address == user_config['pair_address'] and receiver_address == from_address
                 is_sell = receiver_address == user_config['pair_address']
-
-                print("tokens: " + str(token_amount))
-                print("weth_amount: " + str(weth_amount))
-                print("is_buy: " + str(is_buy))
-                print("is_sell: " + str(is_sell))
 
                 if is_buy and weth_amount > 0 and token_amount > 0:
 
+                    # check if the tx_hash is already in the recent_txs list
+                    if tx_hash in recent_txs:
+                        print("tx_hash already in recent_txs")
+                        continue
+                    else:
+                        # add the tx_hash to the recent_txs list
+                        recent_txs.append(tx_hash)
+
+                    print("token_address: ", token_address)
+                    print("sender_address: ", sender_address)
+                    print("receiver_address: ", receiver_address)
+
+                    print("tokens: " + str(token_amount))
+                    print("weth_amount: " + str(weth_amount))
+                    print("is_buy: " + str(is_buy))
+                    print("is_sell: " + str(is_sell))
+
                     print("Buybot detected a buy!")
-                    await update.effective_chat.send_message("Buybot detected a buy!")
+                    # get 24 hour volume
+                    token_price, volume_24h, market_cap = await get_token_price_and_volume_and_mc(
+                        user_config['token_address'])
+
+                    # get token holders
+                    token_holders, total_supply, token_name = await get_token_holders_supply_name(
+                        user_config['token_address'])
+
+                    # Get Token balance for wallet
+                    wallet_token_balance = await get_token_balance(
+                        etherscan_api_key,
+                        user_config['token_address'], from_address)
+
+                    # check if wallet_token_balance is equal to amount0Out
+                    is_new_holder = str(
+                        wallet_token_balance) == str(token_amount)
+
+                    # get token buy sell taxes
+                    buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
+
+                    weth_amountEth = Web3.fromWei(weth_amount, 'ether')
+                    token_amountEth = convert_wei_to_eth(
+                        token_amount, user_config['decimals'])
+
+                    message = create_message(user_config, tx_hash, from_address, weth_amountEth, token_amountEth, token_price,
+                                             volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap))
+
+                    keyboard = [
+                        [
+                            InlineKeyboardButton(
+                                "▫️ advertiser ▫️", callback_data="1")
+                        ],
+                    ]
+                    reply_markup = InlineKeyboardMarkup(keyboard)
+
+                    print(message)
+                    print()
+
+                    # get video file input from local file system
+                    # send video to chat id
+                    video = open(user_config['gif'], 'rb')
+                    await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2", reply_markup=reply_markup)
 
 
 async def setgif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -666,7 +714,7 @@ if __name__ == "__main__":
     moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token = get_env_file_variables()
 
     # add your blockchain connection information
-    infura_url = 'https://goerli.infura.io/v3/' + infura_api_key
+    infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
     web3 = Web3(Web3.HTTPProvider(infura_url))
 
     app = ApplicationBuilder().token(telegram_token).build()
