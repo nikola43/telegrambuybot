@@ -38,9 +38,9 @@ chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Ojl8CaqIu53GYs8W.9nt6i
 
 
 # init the chatbot
-#chatbot = Chatbot({
+# chatbot = Chatbot({
 #    "session_token": chatGPT_token
-#}, conversation_id=None, parent_id=None)  # You can start a custom conversation
+# }, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
 recent_txs = []
 
@@ -66,7 +66,6 @@ async def handle_event(paircontract, event, update: Update, user_config):
     # print(d)
 
     # get reservers from pair contract
-
 
     if tx_receipt is not None:
         weth_amount = 0
@@ -106,7 +105,8 @@ async def handle_event(paircontract, event, update: Update, user_config):
                 if receiver_address == user_config['pair_address']:
                     weth_amount = value
 
-                is_buy = sender_address == user_config['pair_address'] #and receiver_address == from_address
+                # and receiver_address == from_address
+                is_buy = sender_address == user_config['pair_address']
                 is_sell = receiver_address == user_config['pair_address']
 
                 print("token_address: ", token_address)
@@ -138,7 +138,8 @@ async def handle_event(paircontract, event, update: Update, user_config):
                     print("Pair B reserve: ", pair_b_reserve)
 
                     # price impact
-                    price_impact = calculate_price_impact(pair_a_reserve, pair_b_reserve, token_amount)
+                    price_impact = calculate_price_impact(
+                        pair_a_reserve, pair_b_reserve, token_amount)
                     print("Price impact: ", price_impact)
 
                     # get 24 hour volume
@@ -302,6 +303,11 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
 @check_user_has_config()
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
+    # check if bot is already running
+    if update.effective_user.id in users_tasks:
+        await update.message.reply_text(f'Buybot is already running.')
+        return
+
     # read the users_configs.json file into the users_configs variable
     users_configs = read_json_file("users_configs.json")
 
@@ -333,21 +339,25 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     contract = web3.eth.contract(
         address=local_user_config['token_address'], abi=erc20_abi)
 
-    # init pair contract 
-    paircontract = web3.eth.contract(address=local_user_config['pair_address'], abi=uniswap_pair_abi)
-
-    
+    # init pair contract
+    paircontract = web3.eth.contract(
+        address=local_user_config['pair_address'], abi=uniswap_pair_abi)
 
     print("local_user_config: ", local_user_config)
-
-    # check if bot is already running
-    if update.effective_user.id in users_tasks:
-        await update.message.reply_text(f'Buybot is already running.')
-        return
 
     # run the run_buybot function on a new thread
     users_tasks[update.effective_user.id] = asyncio.create_task(
         run_buybot(contract, paircontract, update, local_user_config))
+
+    token_info = get_token_info(
+        moralis_api_key, web3.toChecksumAddress(local_user_config['token_address']))
+
+    print("Pair address: ", local_user_config['pair_address'])
+
+    message = "Token:\n"
+    message = f"Token name: {token_info['name']}\n"
+    message += f"Token symbol: {token_info['symbol']}\n"
+    message += f"Pair address: {local_user_config['pair_address']}\n"
 
     await update.message.reply_text(f'Buybot started.')
 

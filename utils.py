@@ -409,7 +409,7 @@ def calculate_price_impact(pair_a_reserve, pair_b_reserve, tx_amount1In):
     pair_b_price_paid_per_pair_a = pair_a_reserve / pair_b_reserve_after_swap
     print("Pair B price paid per pair A: ", pair_b_price_paid_per_pair_a)
 
-    price_impact = (1 - (pair_a_per_pair_b_price / pair_b_price_paid_per_pair_a)) / 10
+    price_impact = 1 - (pair_a_per_pair_b_price / pair_b_price_paid_per_pair_a)
     #price_impact = price_impact * 100
 
     print("Price impact: ", price_impact, "%")
