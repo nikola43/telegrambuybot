@@ -759,7 +759,7 @@ if __name__ == "__main__":
     infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
     web3 = Web3(Web3.HTTPProvider(infura_url))
 
-    app = ApplicationBuilder().token(telegram_token).build()
+    app = ApplicationBuilder().token(telegram_token).read_timeout(30).write_timeout(30).build()
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
     app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
     app.add_handler(CommandHandler("price", call_get_price_bot))
