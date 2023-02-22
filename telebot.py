@@ -696,7 +696,7 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     keyboard = [
         [
             InlineKeyboardButton(
-                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+                "▫️ Xlab AI is an AI project that consists of Xlab BuyBot, ChatGPT (with text & voice message), Meme/Image Generator, Raider Bot, Contract auditor and Staking. ▫️", url="https://t.me/xlabai")
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -731,7 +731,7 @@ async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
     keyboard = [
         [
             InlineKeyboardButton(
-                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+                "▫️ Xlab AI is an AI project that consists of Xlab BuyBot, ChatGPT (with text & voice message), Meme/Image Generator, Raider Bot, Contract auditor and Staking. ▫️", url="https://t.me/xlabai")
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -775,7 +775,7 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     keyboard = [
         [
             InlineKeyboardButton(
-                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+                "▫️ Xlab AI is an AI project that consists of Xlab BuyBot, ChatGPT (with text & voice message), Meme/Image Generator, Raider Bot, Contract auditor and Staking. ▫️", url="https://t.me/xlabai")
         ],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
