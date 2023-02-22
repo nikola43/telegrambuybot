@@ -7,11 +7,12 @@ from web3 import Web3
 import asyncio
 import requests
 from utils import admin_only, calculate_price_impact, check_user_has_config, convert_wei_to_eth, extract_event_data, get_eth_value_usd, get_token_price_and_volume_and_mc, get_token_holders_supply_name, get_token_dead_balance, get_token_balance, get_token_taxes, create_message, is_bot_chat, is_valid_token_address, read_json_file, get_pair_addressV2, get_token_info, is_valid_url
-from revChatGPT.ChatGPT import Chatbot
 from gtts import gTTS
 from functools import wraps
 from dotenv import load_dotenv
 from eth_abi import abi
+import urllib.request
+import openai
 
 # Replace YOUR_API_KEY with your OpenAI API key
 moralis_api_key = None
@@ -33,16 +34,10 @@ erc20_abi = json.loads('[{"inputs":[],"stateMutability":"nonpayable","type":"con
 
 # create dict for store the users id and the task id
 users_tasks = {}
-
-chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..TAQPXYPpIbmtapzD.EIlP1E69rsaDRXxnpoJFwGvhaJL2z64rj-yrWN1o7QzYWi-ZELXF6aTcsfciHM0YAT_0eZ1ujPfWDU45O7FAeVa47nY62cS1KoVpC-E03s5UyESxbaukcIwxk3iyx8UrD0ocv5xe91kNEnH8oBwgsi1EoVcGF90WLoPs9SDQkVw3RBWzg7p9jr9PnpAgDxHZBGcWHteclXDhCZbP2paJBBlO2oAikW6lKqXcQ3tcGRUmQ5Ql6s0oX1VHgvgvDJXq1RayDa63EJtyJS53JmuRqbVAhtKTfSTCLJsV7h15HdyYUucBXnvzDVfL0RYKOki1Z9I5ViOnZqLy5oAbZqQs6lmiZBSI8mSA0ob6WjxpNV4RTn26lgac3sMpAirHZoAeJw53oFRGKT85JZXsXIcoxh3R8cRLlWJPzDO7_Cu8UQF2HC9AKG2HFBYKd8T8XAsxQ7NOvRGA-XuSHcOb0TGYhot5iep_vogEy_GLJtgSvh8_olm8m7AmgSG3nrkLYhdyRQT2WyBKIDNGyVWxODyRq83Ne67F87F5DUvtRqc5VXkDIf78Y4Sx4NsWALPFjZCPRn0U1EXGxw61aabn3MV-_KobbSIRTQ_7EhXAL4YZpON8eAqlEixfEC-lWRppp_FxnNcu1O3Y3o-wBXgDtXyegR0X1XplTekqXQBwsIkXmStJQVdIHKox3_wm0shYYd7Yx2w5KeM1ThvsgmjE6zSxbxDoQNEskD-6TH7jxVx8BKR19-E0FhzvfqOvLcFAW8GF643ZQLCA2msScv6RQFIeexvNZZixlOTjD56S65cHo5OHxwYeHIDSa_tCN939gxblBrhn_qvnaOQUMYFxQXu6O3oeiSiv4aZ9W-UXl53Gk3Clfor6x6mCnN_V-eH_zMU5YHBGjd61946AWhmmiZUCPyrQ3zhGWJKT5Rhcfl1cEiIScT5SDps18bBKzwTfEVHupHg4JKOC2Lb7ljT5bc1UUZUweWJJ9PYiGw3r79qezdKo1VxQX1k2ZjmT1fwhQexHi0XUwZJE2Dae3UPQsk9tiS3MqSo_OWP8j9P52n20qbuGyKpW2JpeAedQvgQ-pvJfzAQ5atsp_VHJsGndsRxycD4HNtRhgt74yREuePBD-3ZHFCedEZwVHdNQQ3W9UZx9cVUi8Z3A-WM_mHWL_Avc5XkXC5tOCtG6V97b2tX_ddUqI3G95e7_3FYqf9A2q1ZB8ksyY13GomLV-nk_uyENHN43hZLotnN31cvv2FGg_0hazyG6f_x2Q5rN8qFNObeXso9lInkyI4emG536-cBGH-1trdLYnTda12UbZiOJvamrkZz5Bot_vEFdDlDHd4fvcCKMtWk3uEsdFXYbEXYIjZj7LXMD9WSlnXlMLNE7eZ-0tcYJqvkzolHfuuhJhvX3Xwmmcq_WbZCMXnsU9Ad4Rgi1RjgO-488YmXdaPoRA50lsj0xHzISkxWD64tVxDlIaO1lQ8k9BJR9_pzh7kfzWNv6us3xbeMsSX0QIrF42EwSesGEWP4aqGN9dLD_d5JVA99jr-TrY69D-Qo62SPjjH0TKLhzv7FwrclOJwj1xMkG3xnkFQE_Fa4zsDDi94OOV7E0p01-_na68NV3VcbLUIZyjOeGJGkhkGgN-Qr784NgbIFEYXLqpu2bL3QkQ8VLIhhXDNI48f6FXs6bsCYkQrCpmOoxEAVzZhZgwwNOFpXhgIa3MmM9zAOIFHNzjVkLYzR0WSL9GWEUkHINAbrfQW2kJJebDFoup7c_duvvxPlyMe6IyoOkf9NSFt3NH9H5Y6ce_N9FwV9XKvXBlbkHVFNor4Oqh9OUClrYe7gYlTNDPdoqsMA_506wBpuhGVqCg013ZqmkeNW3cuHNgwRnq7ku229UgPJa5WKVYng2lNitI1h4F0LLZlW_PEAS4Xg1-uNUWULNaTmrGWaI3zweNCF228-Q44dka5ki45jt4IRlaR0iIPj6Df-yDZtM-SONVf5lXhDzLhYWG0I7W4qj_C0mwhG6nVEWgxb2yPVVWnlOi4tdaIYmQmpFjE3jzExXmLXdV1Yd8twQWzZ3ReAtzN1Z25m-5IfbdxEln2tLEB47PgjkavKb2jX-u3IwJulQPoKOMEVk17JeszfsfnagbJgxDLS6MN95opYhL7PrC55r4XtLFoLISzwsssMXcCby_eCyqhVKuxqzg36M2BPvQlYfct4RuTSOuJZVY1zrvKalPfiBRbXif3seWqNlvUFllz_HeP42HMUIsE1a5-Pkjr8HDDkzXWo7o00xzgEA0pzMVd8awchTFJz68VWbU8vumUqUMQCIt1mQYoxOwq9bjcHcu5iRNaLQy2f2V8QqQxkRYegb189NyVot0pQxZWMvtWvkO_NYsizKmksLUhfSxWAlu6wLtoLfJvb4iMvSqdwgCq-J-OSgqQKZsc5fBuQEOOqdH3FimK9oJT3OV1rRos17pTIGzEUbwElOGgUVw-Vm47CXFgjQKBa5PjgoRU7Gz2y5ZPDgC_va-KzMaxdt6EjAxBjAgu_1.k8N2R-X1P3Kqkbe7f1dAIw"
-
-
-# init the chatbot
-chatbot = Chatbot({
-    "session_token": chatGPT_token
-}, conversation_id=None, parent_id=None)  # You can start a custom conversation
-
 recent_txs = []
+
+# Models: text-davinci-003,text-curie-001,text-babbage-001,text-ada-001
+MODEL = 'text-davinci-003'
 
 
 async def handle_event(paircontract, event, update: Update, user_config):
@@ -174,7 +169,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
                     keyboard = [
                         [
                             InlineKeyboardButton(
-                                "▫️ advertiser ▫️", callback_data="1")
+                                "▫️ advertiser ▫️", url="https://t.me/+NxL2xoRkFIY1MTU0")
                         ],
                     ]
                     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -678,10 +673,19 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # await update.effective_chat.send_chat_action("typing")
 
     # You can specify custom conversation and parent ids. Otherwise it uses the saved conversation (yes. conversations are automatically saved)
-    response = chatbot.ask(question, conversation_id=None, parent_id=None)
+    # Make the request to the OpenAI API
+    response = requests.post(
+        'https://api.openai.com/v1/completions',
+        headers={'Authorization': f'Bearer {chatGPT_token}'},
+        json={'model': MODEL, 'prompt': question,
+              'temperature': 0.4, 'max_tokens': 300}
+    )
+
+    result = response.json()
+    final_result = ''.join(choice['text'] for choice in result['choices'])
 
     # text to speech response
-    tts = gTTS(response['message'], lang='en', tld='co.uk', slow=False)
+    tts = gTTS(final_result, lang='en', tld='co.uk', slow=False)
     # get user id from the update
     user_id = update.effective_user.id
     # gen filename
@@ -703,6 +707,52 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     os.remove(filename)
 
 
+async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+    # extract the command arguments
+    args = context.args
+
+    # check if the user sent a parameter
+    if not args:
+        await update.message.reply_text("You didn't specify a prompt.")
+        return
+
+    question = ""
+
+    for i in range(len(args)):
+        question += args[i]
+        if i < len(args) - 1:
+            question += " "
+
+
+    prompt = "ultra-realistic 8k " + question
+    print(prompt)
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Make the request to the OpenAI API
+    response = openai.Image.create(
+        prompt=prompt,
+        n=1,
+        size="1024x1024"
+    )
+    image_url = response['data'][0]['url']
+
+    # save the image file
+    urllib.request.urlretrieve(image_url, "image.jpg")
+
+    await update.effective_chat.send_photo(open('image.jpg', 'rb'), reply_to_message_id=update.message.message_id, reply_markup=reply_markup)
+
+    # remove the image file
+    os.remove("image.jpg")
+
+
 async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # extract the command arguments
@@ -713,14 +763,6 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text("You didn't specify a prompt.")
         return
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
     question = ""
 
     for i in range(len(args)):
@@ -729,8 +771,26 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             question += " "
 
     print(question)
-    response = chatbot.ask(question, conversation_id=None, parent_id=None)
-    await update.message.reply_text(response['message'], reply_markup=reply_markup)
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    # Make the request to the OpenAI API
+    response = requests.post(
+        'https://api.openai.com/v1/completions',
+        headers={'Authorization': f'Bearer {chatGPT_token}'},
+        json={'model': MODEL, 'prompt': question,
+              'temperature': 0.4, 'max_tokens': 300}
+    )
+
+    result = response.json()
+    final_result = ''.join(choice['text'] for choice in result['choices'])
+    await update.message.reply_text(final_result, reply_markup=reply_markup)
 
 
 def get_env_file_variables():
@@ -743,28 +803,11 @@ def get_env_file_variables():
     return moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token
 
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Parses the CallbackQuery and updates the message text."""
-    query = update.callback_query
-
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    await query.answer()
-
-    # link
-    link = "https://t.me/+NxL2xoRkFIY1MTU0"
-
-    # create markdown link
-    markdown_link = "[Group]("+link + ")"
-
-    # await update.effective_chat.send_message(text=f"Selected option: {query.data}")
-    await update.effective_chat.send_message(markdown_link, parse_mode="MarkdownV2")
-
-
 if __name__ == "__main__":
     load_dotenv()
 
     moralis_api_key, etherscan_api_key, infura_api_key, chatGPT_token, telegram_token = get_env_file_variables()
+    openai.api_key = chatGPT_token
 
     # add your blockchain connection information
     infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
@@ -774,6 +817,7 @@ if __name__ == "__main__":
         telegram_token).read_timeout(30).write_timeout(30).build()
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
     app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    app.add_handler(CommandHandler("realai", ask_chat_gpt_image))
     app.add_handler(CommandHandler("price", call_get_price_bot))
     app.add_handler(CommandHandler("address", buybot_configaddress))
     app.add_handler(CommandHandler("emoji", buybot_configemoji))
@@ -785,7 +829,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
-    app.add_handler(CallbackQueryHandler(button))
     app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
