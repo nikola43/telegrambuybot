@@ -8,6 +8,8 @@ from moralis import evm_api
 from urllib.parse import urlparse
 from telegram import Update
 from functools import wraps
+import time
+import plotly.express as px
 
 
 def is_valid_url(url):
@@ -410,7 +412,27 @@ def calculate_price_impact(pair_a_reserve, pair_b_reserve, tx_amount1In):
     print("Pair B price paid per pair A: ", pair_b_price_paid_per_pair_a)
 
     price_impact = 1 - (pair_a_per_pair_b_price / pair_b_price_paid_per_pair_a)
-    #price_impact = price_impact * 100
+    # price_impact = price_impact * 100
 
     print("Price impact: ", price_impact, "%")
     return price_impact
+
+
+def get_token_candles(token_address):
+    close_usd_list = []
+    to_time = int(time.time())
+    from_time = to_time - 21600  # 6 hours
+
+
+    response = requests.get("https://io.dexscreener.com/dex/chart/amm/uniswap/bars/ethereum/" +
+                            token_address+"?from="+str(from_time)+"&to="+str(to_time)+"&res=15&cb=24")
+
+    if response is not None:
+        data = response.json()
+        if data['bars']:
+            candles = data['bars']
+
+            for candle in candles:
+                close_usd_list.append(float(candle['close']))
+
+    return candles

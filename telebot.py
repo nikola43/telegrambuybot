@@ -34,13 +34,13 @@ erc20_abi = json.loads('[{"inputs":[],"stateMutability":"nonpayable","type":"con
 # create dict for store the users id and the task id
 users_tasks = {}
 
-chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Ojl8CaqIu53GYs8W.9nt6iGPVj7y9u2A1BDoIutQ_NM3pSXQuZtj1VQlN8Ls0DJum9wb-mjg3EBpZW9rSQHRUYoz9TzjbGMaxecOdDEVPaBR2am5rRwTkiLyVsuIxXnwbg1AnCTNwrSTtanwHTGSqEjvNTmgbYWDM3eGg9ExDqdFryXcMD0ZfPhNYPWJ9IJYHlB0995n3uwyNljCM2KjFwLWsWRprKlQh2W2jfqTwA5CFjbLzrL-tfiWtd8X2o8tWlCEg9Ctr_YT84Rcz8KxiVbL3rh2C8FkAcaWZ7wZGKo15wYrdP12ruszvL0NS3EqEu-f5WFYTl8LF9BeJhzcK-woNNma9bzPnWW7QSIfAACt9NrF_12rnVBZ0k6sV73M0KXT52XCuLvT8PPUgliPodFp6vEqD0oK143KqKtIXMs1AYlgg-5HOvwZk3JVgAiF5VYZPk78q5lDGe7Qzf0AfGllK5orWmrHjkfidZ4zjpFedy4f6JI1XzXM7j6E2HzXA7i7ti8fJHh7hjoOuzsZdgUIVNPIvZRZBDcM3auvK7eBw8xiMyo0hXzr-hvRv_um_TjILg2d87cx-ET4GF5DoBdwx68IUQ_1-CvUL2fU7k_oWTWy_NqMFUoonfov2nCeigszBotbsCq7Z0aiqR7AijtwHD8gWuAYwNmKPXwfc6uZAcPY6h1jWVj5D3E4zD4mZBWfDggDXiRX50jgVaZaTgxyV20tAxyns7UX6tO1rY4-PLv3pGowsMLAkyF-K33m3jGpXtiJaHb6Gurj7GjhfX_zYyaAIliaoun3tbILMEUkhAgwmioXvdjQ5QgNO7mL9eLrcFdbwr8WfSCoai0FZ13K7-z_Ps043-tL81BK2qXifRn716-OnQ8x7m0wE_0lnHtuRrX5Vs5eOq4Tt6z6bFc3iQzydLX1OU5VZrqV0Epa71XhXxHJiJcitaJmSQ3rOu3DMB0pWmyRkw2ByYkBsbitXi5Li9md6MPwWp60-qKyR0dAN6g_Hmufl2dywC9lcvJECpthNaTLeaXDW18yJkFpFPn9ol63Lv_R3ecFsCn7-iJ4PdaIRsRzdsB4XgU4FdeY5MwCXG27z4fUagOfuEEwc9OHZNqi4hFrt0ng3_EI_DrfiQcc7qBqJyU3HWPuSZxwMmk25WACWKGwUYVwKveYqMqOg-r8GDEY25YcgT1cMw8_NgTNsiB-5FxwPwd5HeAdFwKvnHBacoHpl3ZSe-KroUHfTUw30gbz3ciaqm2CrN8Cvv6Go_r4ESjnKUO5DJ0gjdmOB2xnXQIW5UGXbOrIyCzwD3tY-jPvXcleVDhrWKKc4NuF5A5_L6iKfvaqxQK6ZtIsSfM06sL8TsmrI3_oZOIHaZIeeMFIM0sY9TrpUaFMgfzJjcrvAH2kDy8rgZ0rlvdXOOGYyZTFW4-vkDVpbCP2-zr37s3kdFRpe_1I3aoGxtRRqn-sFYpPsbuOunTWb7acnVKvQ_QaTHeOAMfTCJ88cDEmw6sPEKnFrcWdADzHWTBNw2-yrLejLR_8s0SPR5mwl8Z1rIiz5p-ptBB3hQ_LvG1ouIx7gE7wxgtvCq7bBd2TA-ThXjlWPeX_Fd12FS2ceOwdsmYCTV-12ZavNtcnkq2SHIFDvECb2Bh4MnnznkskPSnwk8JLiwN-W_p5NFGoJUlqkTV1wfF2gFjJ459ei__AGJpWLWIYZeFAtD9vhYgmfzViDrD8hLCqeRnmYe2Etb_1TOF80aFNRwepduwbBahMWpdp-I0lSgeJA8lm2cemGWOQ4vo4Q-ZeIj52DGpM1qjCKRRQZmlWjgMU_OADoWYrPFwP-kVDTeOqqmBLWlFMJmqC6Htf0SG3U5rnDsnuxlSS2Lbw1A4aXZlVt7NKSOJNfvVQWzc3o1VCENMiESCPB1PccMaWNcUIkNXG9t2FkIVVDz1u-4bx0cL3dJAGfickGLEwTJvRyWQ5UlZXtfN8adw0YonwDTwL_FefyeAP0yY3ghmYsgcu5an8iy2RT6Azn_zh0zhMZcO27sOIv22bhFuQEw4T7PSOkP4U0-43199sQvi2ln2THmC76gWvxxNEej5BFYA302UBoVBEnf7aw_aCZKAu4gB09W-8H6VQoQoJGPCPHjqXAtKsTc3oyvUdve84a9uUr91kF8i9Hgzx3Nb1jTp-gPKUcmx6SeykSxSCYmoTzBAg9ULR2abM5_ZJhnKWp_6q7ukFUpFxXEZ5e_451TQMcK8GLbEk4eBiwrvRo5hHtBCmHSwwakH_7VG1XsN6nVHUCtqf_yNCxNN3WV9N0mqPV3bYRuWLGwtj2EMBomgcQeFDfOJnVLOO7s7IHPIXUsP2XULS-lgIeqlrgehFHG2KbCh6htPDSe1bvqTEgfUVvMMFTe8ey69D5-atAnO5YMbkVcF6N4dwmCfncozHfkmzwET0_xzTghnFojuJ749xhlDxljnv5VAtZM9UiWRXPXI7HQRySqu8ZHPqPCB6PplPYW_V_Arneg6vlTyevOOX_c-tYWHfZXW6HuvhJihoXT0wjhNqWEjJQzSQUP9HmfMkN-gOoR1S8zyjO0G8ERraHkpqO.PU11I5mAVxZ1Rt8v-9bkwQ"
+chatGPT_token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..TAQPXYPpIbmtapzD.EIlP1E69rsaDRXxnpoJFwGvhaJL2z64rj-yrWN1o7QzYWi-ZELXF6aTcsfciHM0YAT_0eZ1ujPfWDU45O7FAeVa47nY62cS1KoVpC-E03s5UyESxbaukcIwxk3iyx8UrD0ocv5xe91kNEnH8oBwgsi1EoVcGF90WLoPs9SDQkVw3RBWzg7p9jr9PnpAgDxHZBGcWHteclXDhCZbP2paJBBlO2oAikW6lKqXcQ3tcGRUmQ5Ql6s0oX1VHgvgvDJXq1RayDa63EJtyJS53JmuRqbVAhtKTfSTCLJsV7h15HdyYUucBXnvzDVfL0RYKOki1Z9I5ViOnZqLy5oAbZqQs6lmiZBSI8mSA0ob6WjxpNV4RTn26lgac3sMpAirHZoAeJw53oFRGKT85JZXsXIcoxh3R8cRLlWJPzDO7_Cu8UQF2HC9AKG2HFBYKd8T8XAsxQ7NOvRGA-XuSHcOb0TGYhot5iep_vogEy_GLJtgSvh8_olm8m7AmgSG3nrkLYhdyRQT2WyBKIDNGyVWxODyRq83Ne67F87F5DUvtRqc5VXkDIf78Y4Sx4NsWALPFjZCPRn0U1EXGxw61aabn3MV-_KobbSIRTQ_7EhXAL4YZpON8eAqlEixfEC-lWRppp_FxnNcu1O3Y3o-wBXgDtXyegR0X1XplTekqXQBwsIkXmStJQVdIHKox3_wm0shYYd7Yx2w5KeM1ThvsgmjE6zSxbxDoQNEskD-6TH7jxVx8BKR19-E0FhzvfqOvLcFAW8GF643ZQLCA2msScv6RQFIeexvNZZixlOTjD56S65cHo5OHxwYeHIDSa_tCN939gxblBrhn_qvnaOQUMYFxQXu6O3oeiSiv4aZ9W-UXl53Gk3Clfor6x6mCnN_V-eH_zMU5YHBGjd61946AWhmmiZUCPyrQ3zhGWJKT5Rhcfl1cEiIScT5SDps18bBKzwTfEVHupHg4JKOC2Lb7ljT5bc1UUZUweWJJ9PYiGw3r79qezdKo1VxQX1k2ZjmT1fwhQexHi0XUwZJE2Dae3UPQsk9tiS3MqSo_OWP8j9P52n20qbuGyKpW2JpeAedQvgQ-pvJfzAQ5atsp_VHJsGndsRxycD4HNtRhgt74yREuePBD-3ZHFCedEZwVHdNQQ3W9UZx9cVUi8Z3A-WM_mHWL_Avc5XkXC5tOCtG6V97b2tX_ddUqI3G95e7_3FYqf9A2q1ZB8ksyY13GomLV-nk_uyENHN43hZLotnN31cvv2FGg_0hazyG6f_x2Q5rN8qFNObeXso9lInkyI4emG536-cBGH-1trdLYnTda12UbZiOJvamrkZz5Bot_vEFdDlDHd4fvcCKMtWk3uEsdFXYbEXYIjZj7LXMD9WSlnXlMLNE7eZ-0tcYJqvkzolHfuuhJhvX3Xwmmcq_WbZCMXnsU9Ad4Rgi1RjgO-488YmXdaPoRA50lsj0xHzISkxWD64tVxDlIaO1lQ8k9BJR9_pzh7kfzWNv6us3xbeMsSX0QIrF42EwSesGEWP4aqGN9dLD_d5JVA99jr-TrY69D-Qo62SPjjH0TKLhzv7FwrclOJwj1xMkG3xnkFQE_Fa4zsDDi94OOV7E0p01-_na68NV3VcbLUIZyjOeGJGkhkGgN-Qr784NgbIFEYXLqpu2bL3QkQ8VLIhhXDNI48f6FXs6bsCYkQrCpmOoxEAVzZhZgwwNOFpXhgIa3MmM9zAOIFHNzjVkLYzR0WSL9GWEUkHINAbrfQW2kJJebDFoup7c_duvvxPlyMe6IyoOkf9NSFt3NH9H5Y6ce_N9FwV9XKvXBlbkHVFNor4Oqh9OUClrYe7gYlTNDPdoqsMA_506wBpuhGVqCg013ZqmkeNW3cuHNgwRnq7ku229UgPJa5WKVYng2lNitI1h4F0LLZlW_PEAS4Xg1-uNUWULNaTmrGWaI3zweNCF228-Q44dka5ki45jt4IRlaR0iIPj6Df-yDZtM-SONVf5lXhDzLhYWG0I7W4qj_C0mwhG6nVEWgxb2yPVVWnlOi4tdaIYmQmpFjE3jzExXmLXdV1Yd8twQWzZ3ReAtzN1Z25m-5IfbdxEln2tLEB47PgjkavKb2jX-u3IwJulQPoKOMEVk17JeszfsfnagbJgxDLS6MN95opYhL7PrC55r4XtLFoLISzwsssMXcCby_eCyqhVKuxqzg36M2BPvQlYfct4RuTSOuJZVY1zrvKalPfiBRbXif3seWqNlvUFllz_HeP42HMUIsE1a5-Pkjr8HDDkzXWo7o00xzgEA0pzMVd8awchTFJz68VWbU8vumUqUMQCIt1mQYoxOwq9bjcHcu5iRNaLQy2f2V8QqQxkRYegb189NyVot0pQxZWMvtWvkO_NYsizKmksLUhfSxWAlu6wLtoLfJvb4iMvSqdwgCq-J-OSgqQKZsc5fBuQEOOqdH3FimK9oJT3OV1rRos17pTIGzEUbwElOGgUVw-Vm47CXFgjQKBa5PjgoRU7Gz2y5ZPDgC_va-KzMaxdt6EjAxBjAgu_1.k8N2R-X1P3Kqkbe7f1dAIw"
 
 
 # init the chatbot
-# chatbot = Chatbot({
-#    "session_token": chatGPT_token
-# }, conversation_id=None, parent_id=None)  # You can start a custom conversation
+chatbot = Chatbot({
+    "session_token": chatGPT_token
+}, conversation_id=None, parent_id=None)  # You can start a custom conversation
 
 recent_txs = []
 
@@ -675,7 +675,7 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     print(question)
 
     # set bot typing status
-    await update.effective_chat.send_chat_action("typing")
+    # await update.effective_chat.send_chat_action("typing")
 
     # You can specify custom conversation and parent ids. Otherwise it uses the saved conversation (yes. conversations are automatically saved)
     response = chatbot.ask(question, conversation_id=None, parent_id=None)
@@ -689,7 +689,15 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # save the mp3 file
     tts.save(filename)
 
-    await update.effective_chat.send_voice(filename)
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.effective_chat.send_voice(filename, reply_to_message_id=update.message.message_id, reply_markup=reply_markup)
 
     # remove the mp3 file
     os.remove(filename)
@@ -705,21 +713,24 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text("You didn't specify a prompt.")
         return
 
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "▫️ POWERED BY XLABAI BUY HERE ▫️", url="https://t.me/XlabBuyBot")
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     question = ""
 
     for i in range(len(args)):
         question += args[i]
         if i < len(args) - 1:
             question += " "
+
     print(question)
-
-    # set bot typing status
-    await update.effective_chat.send_chat_action("typing")
-
-    # You can specify custom conversation and parent ids. Otherwise it uses the saved conversation (yes. conversations are automatically saved)
     response = chatbot.ask(question, conversation_id=None, parent_id=None)
-
-    await update.effective_chat.send_message(response['message'])
+    await update.message.reply_text(response['message'], reply_markup=reply_markup)
 
 
 def get_env_file_variables():
@@ -759,7 +770,8 @@ if __name__ == "__main__":
     infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
     web3 = Web3(Web3.HTTPProvider(infura_url))
 
-    app = ApplicationBuilder().token(telegram_token).read_timeout(30).write_timeout(30).build()
+    app = ApplicationBuilder().token(
+        telegram_token).read_timeout(30).write_timeout(30).build()
     app.add_handler(CommandHandler("ai", ask_chat_gpt))
     app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
     app.add_handler(CommandHandler("price", call_get_price_bot))
