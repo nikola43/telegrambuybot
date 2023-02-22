@@ -740,7 +740,7 @@ async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
     response = openai.Image.create(
         prompt=prompt,
         n=1,
-        size="1024x1024"
+        size="512x512"
     )
     image_url = response['data'][0]['url']
 
