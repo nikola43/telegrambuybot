@@ -94,7 +94,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
                 value = int.from_bytes(bytes.fromhex(
                     log["data"][2:66]), "big", signed=False)
 
-                if sender_address == user_config['pair_address'] and token_address == user_config['token_address']:
+                if sender_address == user_config['pair_address'] and token_address == user_config['token_address'] and receiver_address == from_address:
                     token_amount = value
 
                 if receiver_address == user_config['pair_address']:
@@ -723,7 +723,6 @@ async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
         question += args[i]
         if i < len(args) - 1:
             question += " "
-
 
     prompt = "ultra-realistic 8k " + question
     print(prompt)
