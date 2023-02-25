@@ -788,6 +788,7 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
 
     result = response.json()
+    print(result)
     final_result = ''.join(choice['text'] for choice in result['choices'])
     await update.message.reply_text(final_result, reply_markup=reply_markup)
 
@@ -814,9 +815,9 @@ if __name__ == "__main__":
 
     app = ApplicationBuilder().token(
         telegram_token).read_timeout(30).write_timeout(30).build()
-    app.add_handler(CommandHandler("ai", ask_chat_gpt))
-    app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
-    app.add_handler(CommandHandler("realai", ask_chat_gpt_image))
+    #app.add_handler(CommandHandler("ai", ask_chat_gpt))
+    #app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    #app.add_handler(CommandHandler("realai", ask_chat_gpt_image))
     app.add_handler(CommandHandler("price", call_get_price_bot))
     app.add_handler(CommandHandler("address", buybot_configaddress))
     app.add_handler(CommandHandler("emoji", buybot_configemoji))
@@ -828,7 +829,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
-    app.add_handler(CommandHandler("test", send_message))
+    #app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
