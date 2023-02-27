@@ -655,6 +655,19 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
+    user_id = update.effective_user.id
+
+    # check if the user has already made a request
+    if user_id in users_last_ai_request_dates:
+        # check if the user has made a request in the last 5 seconds
+        diff = datetime.now() - users_last_ai_request_dates[user_id]
+        print(diff)
+        if diff < timedelta(seconds=1200):
+            await update.message.reply_text("Please wait 20 mins before making another request.")
+            return
+
+    users_last_ai_request_dates.update({user_id: datetime.now()})
+
     # extract the command arguments
     args = context.args
 
@@ -710,6 +723,19 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+    user_id = update.effective_user.id
+
+    # check if the user has already made a request
+    if user_id in users_last_ai_request_dates:
+        # check if the user has made a request in the last 5 seconds
+        diff = datetime.now() - users_last_ai_request_dates[user_id]
+        print(diff)
+        if diff < timedelta(seconds=1200):
+            await update.message.reply_text("Please wait 20 mins before making another request.")
+            return
+
+    users_last_ai_request_dates.update({user_id: datetime.now()})    
 
     # extract the command arguments
     args = context.args
