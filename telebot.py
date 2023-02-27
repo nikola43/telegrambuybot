@@ -815,9 +815,9 @@ if __name__ == "__main__":
 
     app = ApplicationBuilder().token(
         telegram_token).read_timeout(30).write_timeout(30).build()
-    #app.add_handler(CommandHandler("ai", ask_chat_gpt))
-    #app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
-    #app.add_handler(CommandHandler("realai", ask_chat_gpt_image))
+    app.add_handler(CommandHandler("ai", ask_chat_gpt))
+    app.add_handler(CommandHandler("aivoice", ask_chat_gpt_voice))
+    app.add_handler(CommandHandler("realai", ask_chat_gpt_image))
     app.add_handler(CommandHandler("price", call_get_price_bot))
     app.add_handler(CommandHandler("address", buybot_configaddress))
     app.add_handler(CommandHandler("emoji", buybot_configemoji))
