@@ -1,4 +1,3 @@
-
 import os
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters, CallbackQueryHandler
@@ -13,6 +12,8 @@ from dotenv import load_dotenv
 from eth_abi import abi
 import urllib.request
 import openai
+from datetime import datetime, timedelta
+
 
 # Replace YOUR_API_KEY with your OpenAI API key
 moralis_api_key = None
@@ -35,6 +36,7 @@ erc20_abi = json.loads('[{"inputs":[],"stateMutability":"nonpayable","type":"con
 # create dict for store the users id and the task id
 users_tasks = {}
 recent_txs = []
+users_last_ai_request_dates = {}
 
 # Models: text-davinci-003,text-curie-001,text-babbage-001,text-ada-001
 MODEL = 'text-davinci-003'
@@ -753,6 +755,18 @@ async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.effective_user.id
+
+    # check if the user has already made a request
+    if user_id in users_last_ai_request_dates:
+        # check if the user has made a request in the last 5 seconds
+        diff = datetime.now() - users_last_ai_request_dates[user_id]
+        print(diff)
+        if diff < timedelta(seconds=1200):
+            await update.message.reply_text("Please wait 20 mins before making another request.")
+            return
+
+    users_last_ai_request_dates.update({user_id: datetime.now()})
 
     # extract the command arguments
     args = context.args
@@ -829,7 +843,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("stopbuybot", stop_buybot))
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
-    #app.add_handler(CommandHandler("test", send_message))
+    # app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
