@@ -299,9 +299,11 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
 @admin_only()
 @check_user_has_config()
 async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = update.effective_chat.id
+    print("chat_id: " + str(chat_id))
 
     # check if bot is already running
-    if update.effective_user.id in users_tasks:
+    if chat_id in users_tasks:
         await update.message.reply_text(f'Buybot is already running.')
         return
 
@@ -343,7 +345,7 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     print("local_user_config: ", local_user_config)
 
     # run the run_buybot function on a new thread
-    users_tasks[update.effective_user.id] = asyncio.create_task(
+    users_tasks[chat_id] = asyncio.create_task(
         run_buybot(contract, paircontract, update, local_user_config))
 
     token_info = get_token_info(
@@ -401,13 +403,15 @@ async def buybotconfigvideo(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 @admin_only()
 @check_user_has_config()
 async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = update.effective_chat.id
+    print("chat_id: " + str(chat_id))
 
     # check if the user has a task running
-    if update.effective_user.id not in users_tasks:
+    if chat_id not in users_tasks:
         await update.message.reply_text(f'Buybot is not running.')
         return
 
-    task = users_tasks[update.effective_user.id]
+    task = users_tasks[chat_id]
 
     # check if the run_buybot_task is running
     if task == None:
@@ -418,7 +422,7 @@ async def stop_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     task.cancel()
 
     # delete the task from the users_tasks dictionary
-    del users_tasks[update.effective_user.id]
+    del users_tasks[chat_id]
 
     await update.message.reply_text(f'Buybot stopped.')
 
@@ -580,8 +584,11 @@ async def buybot_configemoji(update: Update, context: ContextTypes.DEFAULT_TYPE)
 @is_bot_chat(bot_chat_id)
 @admin_only()
 async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = update.effective_chat.id
+    user_id = update.effective_user.id
+    chat_in_tasks = chat_id in users_tasks
 
-    if update.effective_user.id in users_tasks:
+    if chat_in_tasks:
         await update.message.reply_text(f'Buybot is running, stop it for change the address.')
         return
 
@@ -603,9 +610,6 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
 
     token_info = get_token_info(
         moralis_api_key, web3.toChecksumAddress(args[0]))
-
-    # get chat id from the update
-    chat_id = update.effective_chat.id
 
     users_configs = read_json_file("users_configs.json")
     local_user_config = None
@@ -645,7 +649,7 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
         json.dump(users_configs, outfile)
 
     message = "Selected token:\n"
-    message = f"Token name: {token_info['name']}\n"
+    message += f"Token name: {token_info['name']}\n"
     message += f"Token symbol: {token_info['symbol']}\n"
     message += f"Pair address: {pair_address}\n"
 
