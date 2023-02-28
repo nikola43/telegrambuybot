@@ -1,1 +1,15 @@
-[{"token_address": "0xF029Fd6b5ED35C825Dd02B7A02952C30002840E4", "pair_address": "0xCC67317Ba97659c96d0ad1bEb1a5Cb703d365502", "lp_type": "v2", "decimals": 18, "chat_id": -1001868355104, "emoji": "\u26aa\ufe0f", "telegramurl": "https://t.me/", "advertiser": "https://google.com/", "twitterurl": "https://twitter.com/", "websiteurl": "https://google.com/", "gif": "video.mp4"}]
+[
+	{
+		"token_address": "0xF029Fd6b5ED35C825Dd02B7A02952C30002840E4",
+		"pair_address": "0xCC67317Ba97659c96d0ad1bEb1a5Cb703d365502",
+		"decimals": 18,
+		"chat_id": -1001868355104,
+		"emoji": "\u26aa\ufe0f",
+		"telegramurl": "https://t.me/",
+		"advertiser": "https://google.com/",
+		"twitterurl": "https://twitter.com/",
+		"websiteurl": "https://google.com/",
+		"gif": "video.mp4",
+		"lp_type": "v2"
+	}
+]
