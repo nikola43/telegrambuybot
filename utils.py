@@ -189,6 +189,7 @@ def get_pair_address(api_key, token_address):
 async def get_pair_addressV2(token_address):
 
     pair_address = None
+    lp_type = None
 
     response = requests.get(
         "https://api.dexscreener.com/latest/dex/tokens/" + token_address)
@@ -197,8 +198,9 @@ async def get_pair_addressV2(token_address):
         data = response.json()
         if data['pairs']:
             pair_address = data['pairs'][0]['pairAddress']
+            lp_type = data['pairs'][0]['labels'][0]
 
-    return pair_address
+    return pair_address, lp_type
 
 
 def calc_circulating_supply(total_supply: str, dead_wallet_balance: str):
@@ -336,7 +338,7 @@ def check_user_has_config():
     def decorator(func):
         @wraps(func)
         async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-            if check_user(update.effective_user.id):
+            if check_user(update.effective_chat.id):
                 await func(update, context)
             else:
                 await update.message.reply_text("You don't have a config yet. Please use /address to set your token address.")
@@ -344,12 +346,12 @@ def check_user_has_config():
     return decorator
 
 
-def check_user(user_id) -> bool:
+def check_user(chat_id) -> bool:
     users_configs = read_json_file("users_configs.json")
 
     # loop through the users_configs and find the config for the current user
     for user_config in users_configs:
-        if user_config['user_id'] == user_id:
+        if user_config['chat_id'] == chat_id:
             return True
 
     return False
@@ -422,7 +424,6 @@ def get_token_candles(token_address):
     close_usd_list = []
     to_time = int(time.time())
     from_time = to_time - 21600  # 6 hours
-
 
     response = requests.get("https://io.dexscreener.com/dex/chart/amm/uniswap/bars/ethereum/" +
                             token_address+"?from="+str(from_time)+"&to="+str(to_time)+"&res=15&cb=24")
