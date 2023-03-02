@@ -187,7 +187,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
                     keyboard = [
                         [
                             InlineKeyboardButton(
-                                "▫️ advertiser ▫️", url="https://t.me/+NxL2xoRkFIY1MTU0")
+                                "▫️ advertiser ▫️", url="https://t.me/xlabai")
                         ],
                     ]
                     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -728,6 +728,7 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     filename = f"{user_id}.mp3"
     # save the mp3 file
     tts.save(filename)
+
 
     keyboard = [
         [

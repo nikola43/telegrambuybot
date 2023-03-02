@@ -19,7 +19,8 @@ https://www.google.com/
 
 
 ai - Chat with ai chatbot
-aivoice - Chat with ai chatbot and reply you with voice audio  
+aivoice - Chat with ai chatbot and reply you with voice audio
+realai - Create ai image
 price - Return token price and info
 address - Set the token address
 emoji - Set the custom emoji
@@ -27,6 +28,7 @@ website - Set the website url
 telegram - Set the telegram url 
 twitter - Set the twitter url
 gif - Set the video / gif
+advertiser - Show advertiser
 startbuybot - Start the bot
 stopbuybot - Stop the bot
 help - Show all commands
