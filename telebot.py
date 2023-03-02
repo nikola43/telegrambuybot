@@ -477,7 +477,7 @@ async def advertiser_fn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         if user_config["chat_id"] == update.effective_chat.id:
             # update the emoji
             user_config["advertiser"] = args[0]
-            await update.message.reply_text("Telegram url updated.")
+            await update.message.reply_text("Advertiser url updated.")
             # write the users_configs variable to the users_configs.json file
             with open('users_configs.json', 'w') as outfile:
                 json.dump(users_configs, outfile)
