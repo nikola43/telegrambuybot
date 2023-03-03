@@ -215,7 +215,7 @@ def calc_market_cap(price: str, circulating_supply: str):
 def create_emoji_text(tx_amount1InEthUnits: str, emoji_char: str):
     emoji_text = ""
     emoji_icon = emoji_char
-    emoji_value = 0.01
+    emoji_value = 0.1
     emoji_count = int(float(tx_amount1InEthUnits) / emoji_value)
 
     # add one emoji for every 0.01 eth

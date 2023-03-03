@@ -46,6 +46,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
     print("")
 
     tx_hash = event['transactionHash'].hex()
+    #tx_hash = event['transactionHash']
     # from_address = event['args']['from']
 
     # get the transaction
@@ -96,6 +97,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
                     log["data"][2:66]), "big", signed=False)
 
                 print("token_address: ", token_address)
+                print("from_address", from_address)
                 print("sender_address: ", sender_address)
                 print("receiver_address: ", receiver_address)
                 print("value: ", value)
@@ -118,91 +120,91 @@ async def handle_event(paircontract, event, update: Update, user_config):
                     # check if us buying or selling
                     is_buy = receiver_address == user_config['pair_address']
 
-                    if sender_address == user_config['pair_address'] and token_address == user_config['token_address'] and receiver_address == from_address:
+                    if token_address == user_config['token_address'] and receiver_address == from_address and sender_address == user_config['pair_address']:
                         token_amount = value
 
                     if receiver_address == user_config['pair_address']:
                         weth_amount = value
 
-                print("tokens: " + str(token_amount))
+                print("token_amount: " + str(token_amount))
                 print("weth_amount: " + str(weth_amount))
                 print("is_buy: " + str(is_buy))
                 print("is_sell: " + str(is_sell))
+                print("---------------------------------------------")
 
-                if is_buy and weth_amount > 0 and token_amount > 0:
+        if is_buy and weth_amount > 0 and token_amount > 0:
 
-                    # check if the tx_hash is already in the recent_txs list
-                    if tx_hash in recent_txs:
-                        print("tx_hash already in recent_txs")
-                        break
-                    else:
-                        # add the tx_hash to the recent_txs list
-                        recent_txs.append(tx_hash)
+            # check if the tx_hash is already in the recent_txs list
+            if tx_hash in recent_txs:
+                print("tx_hash already in recent_txs")
+            else:
+                # add the tx_hash to the recent_txs list
+                recent_txs.append(tx_hash)
 
-                    print("Buybot detected a buy!")
+            print("Buybot detected a buy!")
 
-                    price_impact = 0
-                    if user_config['lp_type'] == 'v2':
-                        # calculate price impact
-                        reserves = paircontract.functions.getReserves().call()
-                        pair_a_reserve = reserves[0]
-                        pair_b_reserve = reserves[1]
-                        print("Pair A reserve: ", pair_a_reserve)
-                        print("Pair B reserve: ", pair_b_reserve)
+            price_impact = 0
+            if user_config['lp_type'] == 'v2':
+                # calculate price impact
+                reserves = paircontract.functions.getReserves().call()
+                pair_a_reserve = reserves[0]
+                pair_b_reserve = reserves[1]
+                print("Pair A reserve: ", pair_a_reserve)
+                print("Pair B reserve: ", pair_b_reserve)
 
-                        # price impact
-                        price_impact = calculate_price_impact(
-                            pair_a_reserve, pair_b_reserve, token_amount)
-                        print("Price impact: ", price_impact)
+                # price impact
+                price_impact = calculate_price_impact(
+                    pair_a_reserve, pair_b_reserve, token_amount)
+                print("Price impact: ", price_impact)
 
-                    # get 24 hour volume
-                    token_price, volume_24h, market_cap = await get_token_price_and_volume_and_mc(
-                        user_config['token_address'])
+            # get 24 hour volume
+            token_price, volume_24h, market_cap = await get_token_price_and_volume_and_mc(
+                user_config['token_address'])
 
-                    # get token holders
-                    token_holders, total_supply, token_name = await get_token_holders_supply_name(
-                        user_config['token_address'])
+            # get token holders
+            token_holders, total_supply, token_name = await get_token_holders_supply_name(
+                user_config['token_address'])
 
-                    # Get Token balance for wallet
-                    wallet_token_balance = await get_token_balance(
-                        etherscan_api_key,
-                        user_config['token_address'], from_address)
+            # Get Token balance for wallet
+            wallet_token_balance = await get_token_balance(
+                etherscan_api_key,
+                user_config['token_address'], from_address)
 
-                    # check if wallet_token_balance is equal to amount0Out
-                    is_new_holder = str(
-                        wallet_token_balance) == str(token_amount)
+            # check if wallet_token_balance is equal to amount0Out
+            is_new_holder = str(
+                wallet_token_balance) == str(token_amount)
 
-                    # get token buy sell taxes
-                    buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
+            # get token buy sell taxes
+            buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
 
-                    weth_amountEth = Web3.fromWei(weth_amount, 'ether')
-                    token_amountEth = convert_wei_to_eth(
-                        token_amount, user_config['decimals'])
+            weth_amountEth = Web3.fromWei(weth_amount, 'ether')
+            token_amountEth = convert_wei_to_eth(
+                token_amount, user_config['decimals'])
 
-                    eth_usd = get_eth_value_usd(weth_amountEth)
+            eth_usd = get_eth_value_usd(weth_amountEth)
 
-                    message = create_message(user_config, tx_hash, from_address, weth_amountEth, token_amountEth, eth_usd, token_price,
-                                             volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap), price_impact)
+            message = create_message(user_config, tx_hash, from_address, weth_amountEth, token_amountEth, eth_usd, token_price,
+                                     volume_24h, token_holders, token_name, buy_tax, sell_tax, is_new_holder, str(market_cap), price_impact)
 
-                    keyboard = [
-                        [
-                            InlineKeyboardButton(
-                                "▫️ advertiser ▫️", url="https://t.me/xlabai")
-                        ],
-                    ]
-                    reply_markup = InlineKeyboardMarkup(keyboard)
+            keyboard = [
+                [
+                    InlineKeyboardButton(
+                        "▫️ advertiser ▫️", url="https://t.me/xlabai")
+                ],
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
 
-                    print(message)
-                    print()
+            print(message)
+            print()
 
-                    # get video file input from local file system
-                    # send video to chat id
-                    video = open(user_config['gif'], 'rb')
-                    await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2", reply_markup=reply_markup)
+            # get video file input from local file system
+            # send video to chat id
+            video = open(user_config['gif'], 'rb')
+            await update.effective_chat.send_video(video, caption=message, parse_mode="MarkdownV2", reply_markup=reply_markup)
 
-                    # save the recent_txs list to a json file
-                    with open('recent_txs.json', 'w') as outfile:
-                        json.dump(recent_txs, outfile)
+            # save the recent_txs list to a json file
+            with open('recent_txs.json', 'w') as outfile:
+                json.dump(recent_txs, outfile)
 
 
 async def setgif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -223,9 +225,9 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             local_user_config['pair_address'] = web3.toChecksumAddress(
                 local_user_config['pair_address'])
 
-    event = {"args": {"sender": "0x006200FB630000bB009B0083aE13fada00852A89", "to": "0x006200FB630000bB009B0083aE13fada00852A89", "amount0In": 0, "amount1In": 4644197718542142930944, "amount0Out": 1264390494285700000, "amount1Out": 0}, "event": "Swap", "logIndex": 41,
-             "transactionIndex": 4, "transactionHash": "0x447356037ad77e0427f10b788e4f0e8e3941fcf0da323188ed4b34a59b53cbac", "address": "0x80a0102a1E601C55FD3f136128bB2D222A879ff3", "blockHash": "0xb63c717112b5056d6cfc3c9de8fe9e9adbac16f3537099f5226a368a3ef5cf69", "blockNumber": 16577389}
-    await handle_event(event, update, local_user_config)
+    event = {"args": {"from": "0x9e0905249CeEFfFB9605E034b534544684A58BE6", "to": "0xa22EC2A2f9C1F19AE1E7483Be4bAa76e258D2149", "value": 2177777786237}, "event": "Transfer", "logIndex": 218, "transactionIndex": 110, "transactionHash":
+             "0x145fa555c9d22ae7e421858e69b58a8827bcb5bb16dd2a66471a3228948b4965", "address": "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", "blockHash": "0xd499b309e07e5511fd5c8f94a55251f2b8a6a7b2ebc9c651c2425e0924709918", "blockNumber": 16749492}
+    await handle_event("", event, update, local_user_config)
 
 
 async def run_buybot(contract, paircontract, update: Update, user_config):
@@ -612,7 +614,7 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
         data = response.json()
         pair_length = len(data['pairs'])
 
-        if pair_length == 1:
+        if pair_length >= 1:
             pair_address = data['pairs'][0]['pairAddress']
             pair_has_label = data['pairs'][0]['labels'] is not None
 
@@ -728,7 +730,6 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     filename = f"{user_id}.mp3"
     # save the mp3 file
     tts.save(filename)
-
 
     keyboard = [
         [
@@ -902,7 +903,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
     # app.add_handler(CallbackQueryHandler(button))
-    # app.add_handler(CommandHandler("test", send_message))
+    app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
