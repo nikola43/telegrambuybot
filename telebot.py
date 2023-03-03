@@ -903,7 +903,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
     # app.add_handler(CallbackQueryHandler(button))
-    app.add_handler(CommandHandler("test", send_message))
+    #app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
