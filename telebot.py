@@ -36,6 +36,7 @@ uniswap_pair_abi_v3 = json.loads('[{"inputs":[],"stateMutability":"nonpayable","
 users_tasks = {}
 recent_txs = []
 users_last_ai_request_dates = {}
+ai_limit_enabled = False
 
 # Models: text-davinci-003,text-curie-001,text-babbage-001,text-ada-001
 MODEL = 'text-davinci-003'
@@ -681,7 +682,7 @@ async def ask_chat_gpt_voice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_id = update.effective_user.id
 
     # check if the user has already made a request
-    if user_id in users_last_ai_request_dates:
+    if ai_limit_enabled and user_id in users_last_ai_request_dates:
         # check if the user has made a request in the last 5 seconds
         diff = datetime.now() - users_last_ai_request_dates[user_id]
         print(diff)
@@ -750,7 +751,7 @@ async def ask_chat_gpt_image(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_id = update.effective_user.id
 
     # check if the user has already made a request
-    if user_id in users_last_ai_request_dates:
+    if ai_limit_enabled and user_id in users_last_ai_request_dates:
         # check if the user has made a request in the last 5 seconds
         diff = datetime.now() - users_last_ai_request_dates[user_id]
         print(diff)
@@ -807,7 +808,7 @@ async def ask_chat_gpt(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user_id = update.effective_user.id
 
     # check if the user has already made a request
-    if user_id in users_last_ai_request_dates:
+    if ai_limit_enabled and user_id in users_last_ai_request_dates:
         # check if the user has made a request in the last 5 seconds
         diff = datetime.now() - users_last_ai_request_dates[user_id]
         print(diff)
