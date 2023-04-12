@@ -254,11 +254,13 @@ def is_valid_token_address(web3, token_address: str) -> bool:
     """
     try:
         # check if the token address is valid
-        if not Web3.isAddress(token_address):
+        if not web3.is_address(token_address):
+            print("Invalid token address")
             return False
 
         # check if the token address is a contract
-        if not web3.eth.getCode(token_address):
+        if not web3.eth.get_code(token_address):
+            print("Token address is not a contract")
             return False
 
         return True

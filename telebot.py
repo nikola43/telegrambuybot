@@ -22,7 +22,7 @@ telegram_token = None
 
 # add your blockchain connection information
 infura_url = None
-web3 = None
+web3_instance = None
 
 bot_chat_id = 358896373
 
@@ -43,7 +43,7 @@ MODEL = 'text-davinci-003'
 
 
 async def handle_event(paircontract, event, update: Update, user_config):
-    print(Web3.toJSON(event))
+    print(web3_instance.toJSON(event))
     print("")
 
     tx_hash = event['transactionHash'].hex()
@@ -54,9 +54,9 @@ async def handle_event(paircontract, event, update: Update, user_config):
     # tx = web3.eth.getTransaction(tx_hash)
 
     # get the transaction receipt
-    tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+    tx_receipt = web3_instance.eth.getTransactionReceipt(tx_hash)
     # get from address from tx_receipt
-    from_address = Web3.toChecksumAddress(tx_receipt['from'])
+    from_address = web3_instance.to_checksum_address(tx_receipt['from'])
 
     # print(tx_receipt)
 
@@ -69,7 +69,7 @@ async def handle_event(paircontract, event, update: Update, user_config):
         weth_amount = 0
         token_amount = 0
 
-        tx_fn_hash = web3.keccak(text="Transfer(address,address,uint256)")
+        tx_fn_hash = web3_instance.keccak(text="Transfer(address,address,uint256)")
 
         # loop through the logs and find the Transfer event
         for log in tx_receipt.logs:
@@ -84,14 +84,14 @@ async def handle_event(paircontract, event, update: Update, user_config):
                 sender_address = log['topics'][1].hex()
                 decoded_sender_address = abi.decode(
                     ['address'], bytes.fromhex(sender_address[2:]))
-                sender_address = Web3.toChecksumAddress(
+                sender_address = web3_instance.to_checksum_address(
                     decoded_sender_address[0])
 
                 # get the address of the receiver
                 receiver_address = log['topics'][2].hex()
                 decoded_receiver_address = abi.decode(
                     ['address'], bytes.fromhex(receiver_address[2:]))
-                receiver_address = Web3.toChecksumAddress(
+                receiver_address = web3_instance.to_checksum_address(
                     decoded_receiver_address[0])
 
                 value = int.from_bytes(bytes.fromhex(
@@ -221,9 +221,9 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     for user_config in users_configs:
         if user_config['chat_id'] == update.effective_chat.id:
             local_user_config = user_config
-            local_user_config['token_address'] = web3.toChecksumAddress(
+            local_user_config['token_address'] = web3_instance.to_checksum_address(
                 local_user_config['token_address'])
-            local_user_config['pair_address'] = web3.toChecksumAddress(
+            local_user_config['pair_address'] = web3_instance.to_checksum_address(
                 local_user_config['pair_address'])
 
     event = {"args": {"from": "0x9e0905249CeEFfFB9605E034b534544684A58BE6", "to": "0xa22EC2A2f9C1F19AE1E7483Be4bAa76e258D2149", "value": 2177777786237}, "event": "Transfer", "logIndex": 218, "transactionIndex": 110, "transactionHash":
@@ -275,7 +275,7 @@ async def call_get_price_bot(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return
 
     # validate the token address
-    if not is_valid_token_address(web3, Web3.toChecksumAddress(args[0])):
+    if not is_valid_token_address(web3_instance, web3_instance.to_checksum_address(args[0])):
         await update.message.reply_text("Invalid token address.")
         return
 
@@ -335,9 +335,9 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     for user_config in users_configs:
         if user_config['chat_id'] == chat_id:
             local_user_config = user_config
-            local_user_config['token_address'] = web3.toChecksumAddress(
+            local_user_config['token_address'] = web3_instance.to_checksum_address(
                 local_user_config['token_address'])
-            local_user_config['pair_address'] = web3.toChecksumAddress(
+            local_user_config['pair_address'] = web3_instance.to_checksum_address(
                 local_user_config['pair_address'])
 
     # check if the user has a config
@@ -346,19 +346,19 @@ async def start_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     # check if the token address is valid
-    if not is_valid_token_address(web3, local_user_config['token_address']):
+    if not is_valid_token_address(web3_instance, local_user_config['token_address']):
         await update.message.reply_text(f'The token address is not valid.')
         return
 
     # init token contract
-    contract = web3.eth.contract(
+    contract = web3_instance.eth.contract(
         address=local_user_config['token_address'], abi=erc20_abi)
 
     # init pair contract
     selected_abi = uniswap_pair_abi
     if local_user_config['lp_type'] == "v3":
         selected_abi = uniswap_pair_abi_v3
-    paircontract = web3.eth.contract(
+    paircontract = web3_instance.eth.contract(
         address=local_user_config['pair_address'], abi=selected_abi)
 
     # run the run_buybot function on a new thread
@@ -599,8 +599,8 @@ async def buybot_configaddress(update: Update, context: ContextTypes.DEFAULT_TYP
         return
 
     # validate the token address
-    token_address = Web3.toChecksumAddress(args[0])
-    is_valid = is_valid_token_address(web3, token_address)
+    token_address = web3_instance.to_checksum_address(args[0])
+    is_valid = is_valid_token_address(web3_instance, token_address)
     if not is_valid:
         await update.message.reply_text("Invalid token address.")
         return
@@ -884,8 +884,9 @@ if __name__ == "__main__":
     openai.api_key = chatGPT_token
 
     # add your blockchain connection information
-    infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
-    web3 = Web3(Web3.HTTPProvider(infura_url))
+    #infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
+    infura_url = "https://greatest-burned-silence.discover.quiknode.pro/c3925bec20598aa45568fdbf142047817d9ff1ba/"
+    web3_instance = Web3(Web3.HTTPProvider(infura_url))
 
     app = ApplicationBuilder().token(
         telegram_token).read_timeout(30).write_timeout(30).build()

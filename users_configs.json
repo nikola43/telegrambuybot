@@ -1,15 +1,1 @@
-[
-	{
-		"token_address": "0xF029Fd6b5ED35C825Dd02B7A02952C30002840E4",
-		"pair_address": "0xCC67317Ba97659c96d0ad1bEb1a5Cb703d365502",
-		"decimals": 18,
-		"chat_id": -1001868355104,
-		"emoji": "\u26aa\ufe0f",
-		"telegramurl": "https://t.me/",
-		"advertiser": "https://google.com/",
-		"twitterurl": "https://twitter.com/",
-		"websiteurl": "https://google.com/",
-		"gif": "video.mp4",
-		"lp_type": "v2"
-	}
-]
+[{"token_address": "0xF029Fd6b5ED35C825Dd02B7A02952C30002840E4", "pair_address": "0xCC67317Ba97659c96d0ad1bEb1a5Cb703d365502", "decimals": 18, "chat_id": -1001868355104, "emoji": "\u26aa\ufe0f", "telegramurl": "https://t.me/", "advertiser": "https://google.com/", "twitterurl": "https://twitter.com/", "websiteurl": "https://google.com/", "gif": "video.mp4", "lp_type": "v2"}, {"token_address": "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", "pair_address": "0x9e0905249CeEFfFB9605E034b534544684A58BE6", "lp_type": "v3", "decimals": 8, "chat_id": -1001552846924, "emoji": "\u26aa\ufe0f", "telegramurl": "https://t.me/", "advertiser": "https://google.com/", "twitterurl": "https://twitter.com/", "websiteurl": "https://google.com/", "gif": "video.mp4"}, {"token_address": "0x37d640B7eff34400637199084f7fC926f866F0d4", "pair_address": "0xDA3155E91Ca5fD7Db8C00D12A14FC3B60092D111", "lp_type": "v2", "decimals": 18, "chat_id": -1001739623770, "emoji": "\u26aa\ufe0f", "telegramurl": "https://t.me/", "advertiser": "https://google.com/", "twitterurl": "https://twitter.com/", "websiteurl": "https://google.com/", "gif": "video.mp4"}]
