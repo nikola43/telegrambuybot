@@ -145,12 +145,12 @@ async def get_token_taxes(token_address: str):
     sell_tax = None
 
     response = requests.get(
-        "https://aywt3wreda.execute-api.eu-west-1.amazonaws.com/default/IsHoneypot?chain=eth&token=" + token_address)
+        "https://api.honeypot.is/v2/IsHoneypot?address=" + token_address)
 
     if response is not None:
         data = response.json()
-        buy_tax = data['BuyTax']
-        sell_tax = data['SellTax']
+        buy_tax = data['simulationResult']["buyTax"]
+        sell_tax = data['simulationResult']["sellTax"]
 
     return buy_tax, sell_tax
 

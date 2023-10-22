@@ -12,6 +12,8 @@ from eth_abi import abi
 import urllib.request
 import openai
 from datetime import datetime, timedelta
+from hexbytes import HexBytes
+
 
 # Replace YOUR_API_KEY with your OpenAI API key
 moralis_api_key = None
@@ -43,18 +45,18 @@ MODEL = 'text-davinci-003'
 
 
 async def handle_event(paircontract, event, update: Update, user_config):
-    print(web3_instance.toJSON(event))
+    print(web3_instance.to_json(event))
     print("")
 
     tx_hash = event['transactionHash'].hex()
-    #tx_hash = event['transactionHash']
+    # tx_hash = event['transactionHash']
     # from_address = event['args']['from']
 
     # get the transaction
     # tx = web3.eth.getTransaction(tx_hash)
 
     # get the transaction receipt
-    tx_receipt = web3_instance.eth.getTransactionReceipt(tx_hash)
+    tx_receipt = web3_instance.eth.get_transaction_receipt(tx_hash)
     # get from address from tx_receipt
     from_address = web3_instance.to_checksum_address(tx_receipt['from'])
 
@@ -69,7 +71,8 @@ async def handle_event(paircontract, event, update: Update, user_config):
         weth_amount = 0
         token_amount = 0
 
-        tx_fn_hash = web3_instance.keccak(text="Transfer(address,address,uint256)")
+        tx_fn_hash = web3_instance.keccak(
+            text="Transfer(address,address,uint256)")
 
         # loop through the logs and find the Transfer event
         for log in tx_receipt.logs:
@@ -89,13 +92,16 @@ async def handle_event(paircontract, event, update: Update, user_config):
 
                 # get the address of the receiver
                 receiver_address = log['topics'][2].hex()
+                print("receiver_address", receiver_address)
                 decoded_receiver_address = abi.decode(
-                    ['address'], bytes.fromhex(receiver_address[2:]))
+                    ['address'], bytes(HexBytes(receiver_address)))
+                # decoded_receiver_address = abi.decode(['address'], bytes.fromhex(receiver_address[2:]))
                 receiver_address = web3_instance.to_checksum_address(
                     decoded_receiver_address[0])
 
-                value = int.from_bytes(bytes.fromhex(
-                    log["data"][2:66]), "big", signed=False)
+                value = int.from_bytes(
+                    bytes(HexBytes(log["data"][2:66])), "big", signed=False)
+                # value = int.from_bytes(bytes.fromhex(log["data"][2:66]), "big", signed=False)
 
                 print("token_address: ", token_address)
                 print("from_address", from_address)
@@ -178,9 +184,11 @@ async def handle_event(paircontract, event, update: Update, user_config):
             # get token buy sell taxes
             buy_tax, sell_tax = await get_token_taxes(user_config['token_address'])
 
-            weth_amountEth = Web3.fromWei(weth_amount, 'ether')
+            weth_amountEth = Web3.from_wei(weth_amount, 'ether')
             token_amountEth = convert_wei_to_eth(
                 token_amount, user_config['decimals'])
+
+            print("token_amount", token_amount)
 
             eth_usd = get_eth_value_usd(weth_amountEth)
 
@@ -232,12 +240,18 @@ async def send_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def run_buybot(contract, paircontract, update: Update, user_config):
-    event_filter = contract.events.Transfer.createFilter(fromBlock='latest')
+    print(contract.events.Transfer)
+    event_filter = contract.events.Transfer.create_filter(fromBlock='latest')
     print("Starting buybot...")
     while True:
         for Transfer in event_filter.get_new_entries():
             await handle_event(paircontract, Transfer, update, user_config)
         await asyncio.sleep(1)
+    
+    #while True:
+    #    for Transfer in event_filter.get_new_entries():
+    #        await handle_event(paircontract, Transfer, update, user_config)
+    #    await asyncio.sleep(1)
 
 
 async def buybot_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -884,9 +898,10 @@ if __name__ == "__main__":
     openai.api_key = chatGPT_token
 
     # add your blockchain connection information
-    #infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
-    infura_url = "https://greatest-burned-silence.discover.quiknode.pro/c3925bec20598aa45568fdbf142047817d9ff1ba/"
-    web3_instance = Web3(Web3.HTTPProvider(infura_url))
+    # infura_url = 'https://mainnet.infura.io/v3/' + infura_api_key
+    infura_url = "wss://mainnet.infura.io/ws/v3/fe0b9cf93b1047bda0a6e7915f041380"
+    # web3_instance = Web3(Web3.HTTPProvider(infura_url))
+    web3_instance = Web3(Web3.WebsocketProvider(infura_url))
 
     app = ApplicationBuilder().token(
         telegram_token).read_timeout(30).write_timeout(30).build()
@@ -905,7 +920,7 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("help", buybot_help))
     app.add_handler(MessageHandler(filters.VIDEO, buybotconfigvideo))
     # app.add_handler(CallbackQueryHandler(button))
-    #app.add_handler(CommandHandler("test", send_message))
+    # app.add_handler(CommandHandler("test", send_message))
     # app.add_handler(CommandHandler("gif", set_gif))
     # create message handler for .gif files
     # app.add_handler(MessageHandler(filters.Document, buybotconfiggif))
